@@ -70,7 +70,5 @@ def create():
         con.close()
 
 
-
-
 if __name__ == '__main__':
     app.run(port=port, host=host)
