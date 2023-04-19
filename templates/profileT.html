@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Приветствую, {{ id }}!</h1>
+<h1>Приветствую, {{ current_user.name }}!</h1>
 <div>Здесь будет ваш профиль.</div>
+<h3>Описание: {{ current_user.description }}</h3>
 {% endblock %}

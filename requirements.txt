@@ -1,0 +1,6 @@
+Flask
+flask-login
+sqlite3
+sqlalchemy
+flask_wtf
+wtforms

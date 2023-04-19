@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>Приветствую!</h1>
-<div>Здесь будет находится поиск.</div>
+<div>Здесь будет находиться поиск.</div>
 <h2>Объявления</h2>
 
 <div class="card-group">
@@ -13,12 +13,12 @@
        <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826" class="card-img-top" alt="...">
        <div class="card-body">
          <h5 class="card-title">{{item[0]}}</h5>
-         <p class="card-text">Номер пользователя: {{item[1]}}<br>
-                              Описание: {{item[2]}}<br>
-                              Цена: {{item[3]}}</p>
+         <p class="card-text">Номер пользователя: {{item.id_person}}<br>
+                              Описание: {{item.description}}<br>
+                              Цена: {{item.price}}</p>
        </div>
          <div class="card-footer">
-         <small class="text-body-secondary">Дата публикации: {{item[4]}}</small>
+         <small class="text-body-secondary">Дата публикации: {{item.data}}</small>
        </div>
      </div>
    </div>

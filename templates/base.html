@@ -21,9 +21,21 @@
         <li class="nav-item">
             <a class="nav-link" href="/configuration">Настройки</a>
         </li>
+        {% if user.is_authenticated %}
         <li class="nav-item">
-            <a class="nav-link" href="/profile/id=00000000">Профиль</a>
+            <a class="nav-link" href="/profile/id={{ user.id }}">Профиль</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link text-danger" href="/logout">Выход</a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+            <a class="nav-link" href="/login">Войти</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/register">Регистрация</a>
+        </li>
+        {% endif %}
     </ul>
 </header>
 <!-- Begin page content -->
