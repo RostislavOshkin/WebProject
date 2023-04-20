@@ -2,14 +2,18 @@ from flask import Flask
 from flask import render_template, redirect
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
-from data.adverts import Advert
-from forms.loginform import LoginForm
 from data import db_session
 from data.users import User
+from data.adverts import Advert
+from forms.loginform import LoginForm
 from forms.register import RegisterForm
+
+from datetime import timedelta
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -29,7 +33,6 @@ def index():
 def search():
     db_sess = db_session.create_session()
     ans = db_sess.query(Advert).all()  # filter(Advert.name.like('%'))
-    print(ans)
     return render_template('searchT.html', title='Поиск', adverts=ans, user=current_user)
 
 
@@ -38,9 +41,9 @@ def configuration():
     return render_template('configurationT.html', title='Настройки', user=current_user)
 
 
-@app.route('/profile/<id>')
-def profile(id):
-    return render_template('profileT.html', title='Поиск', id=id, user=current_user)
+@app.route('/profile')
+def profile():
+    return render_template('profileT.html', title='Поиск', user=current_user)
 
 
 @app.route('/login', methods=['GET', 'POST'])
