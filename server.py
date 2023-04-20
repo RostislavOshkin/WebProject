@@ -1,5 +1,4 @@
-from flask import Flask
-from flask import render_template, redirect
+from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 from data import db_session
@@ -22,27 +21,35 @@ host = '127.0.0.1'
 port = 8080
 
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST' and request.form["search"]:
+        return redirect(f'/search/{request.form["search"]}')
     return render_template('index.html', title='Главная страница',
                            user=current_user)
 
 
-@app.route('/search')
-def search():
+@app.route('/search/<text>', methods=['GET', 'POST'])
+def search(text):
+    if request.method == 'POST' and request.form["search"]:
+        return redirect(f'/search/{request.form["search"]}')
     db_sess = db_session.create_session()
-    ans = db_sess.query(Advert).all()  # filter(Advert.name.like('%'))
-    return render_template('searchT.html', title='Поиск', adverts=ans, user=current_user)
+    ans = db_sess.query(Advert).filter(Advert.name.like(f'%{text}%'))
+    return render_template('searchT.html', title='Поиск', adverts=ans, user=current_user, search=text)
 
 
-@app.route('/configuration')
+@app.route('/configuration', methods=['GET', 'POST'])
 def configuration():
+    if request.method == 'POST' and request.form["search"]:
+        return redirect(f'/search/{request.form["search"]}')
     return render_template('configurationT.html', title='Настройки', user=current_user)
 
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
 def profile():
+    if request.method == 'POST' and request.form["search"]:
+        return redirect(f'/search/{request.form["search"]}')
     return render_template('profileT.html', title='Поиск', user=current_user)
 
 
@@ -55,7 +62,8 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
-        return render_template('loginT.html', message="Неправильный логин или пароль", form=form, user=current_user)
+        return render_template('loginT.html', title='Авторизация', message="Неправильный логин или пароль",
+                               form=form, user=current_user)
     return render_template('loginT.html', title='Авторизация', form=form, user=current_user)
 
 
