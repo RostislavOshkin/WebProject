@@ -1,3 +1,5 @@
+import sqlite3
+
 from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
@@ -8,7 +10,6 @@ from forms.loginform import LoginForm
 from forms.register import RegisterForm
 
 from datetime import timedelta
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -53,6 +54,15 @@ def profile():
     return render_template('profileT.html', title='Поиск', user=current_user)
 
 
+@app.route('/profile/adverts')
+def adverts():
+    con = sqlite3.connect('db.db')
+    cur = con.cursor()
+    lst = cur.execute(f"""Select * from adverts Where id_person = {current_user.id}""").fetchall()
+    con.close()
+    return render_template('advertT.html', title='Ваши объявления', user=current_user, advrts=lst)
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -85,7 +95,8 @@ def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
-            return render_template('registerT.html', title='Регистрация', form=form, message="Пароли не совпадают", user=current_user)
+            return render_template('registerT.html', title='Регистрация', form=form, message="Пароли не совпадают",
+                                   user=current_user)
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.address == form.address.data).first():
             return render_template('registerT.html', title='Регистрация', form=form,

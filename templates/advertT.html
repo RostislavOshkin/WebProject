@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Приветствую, {{ current_user.name }}!</h1>
+<h3>Ваш id: {{current_user.id}}</h3>
+<div class="card-group">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for advrt in advrts %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826"
+                     class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">{{advrt[1]}}</h5>
+                    <p class="card-text">Номер объявления: {{ advrt[0] }}<br>
+                        Описание: {{ advrt[3] }}<br>
+                        Цена: {{ advrt[4] }}<br>
+                        Файлы: <a class="nav-link" href='/'>{{ advrt[6] }}</a><br></p>
+                </div>
+                <div class="card-footer">
+                    <small class="text-body-secondary">Дата публикации: {{advrt[5]}}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

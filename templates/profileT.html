@@ -2,6 +2,8 @@
 
 {% block content %}
 <h1>Приветствую, {{ current_user.name }}!</h1>
+<h3>Ваш id: {{current_user.id}}</h3>
 <div>Здесь будет ваш профиль.</div>
 <h3>Описание: {{ current_user.description }}</h3>
+<a class="nav-link" href="/profile/adverts">Ваши объявления</a>
 {% endblock %}
