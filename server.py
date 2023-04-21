@@ -11,7 +11,6 @@ from forms.register import RegisterForm
 
 from datetime import timedelta
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)

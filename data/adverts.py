@@ -1,4 +1,3 @@
-import re
 import datetime
 import sqlalchemy
 from sqlalchemy import orm
@@ -18,5 +17,5 @@ class Advert(SqlAlchemyBase):
     for_search = sqlalchemy.Column(sqlalchemy.String,
                                    default=lambda x: re.sub(r'\W', '', (x.name + x.description).lower()))
 
-    user = orm.relationship("User")
+    user = orm.relationship('User')
     files = orm.relationship("File")
