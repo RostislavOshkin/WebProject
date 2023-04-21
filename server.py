@@ -1,4 +1,4 @@
-import sqlite3
+import re
 
 from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -11,6 +11,7 @@ from forms.register import RegisterForm
 
 from datetime import timedelta
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
@@ -22,44 +23,45 @@ host = '127.0.0.1'
 port = 8080
 
 
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/index', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
+@app.route('/index', methods=['GET'])
 def index():
-    if request.method == 'POST' and request.form["search"]:
-        return redirect(f'/search/{request.form["search"]}')
     return render_template('index.html', title='Главная страница',
                            user=current_user)
 
-
-@app.route('/search/<text>', methods=['GET', 'POST'])
-def search(text):
-    if request.method == 'POST' and request.form["search"]:
+@app.route('/', methods=['POST'])
+@app.route('/index', methods=['POST'])
+@app.route('/search/<text>', methods=['POST'])
+@app.route('/configuration', methods=['POST'])
+@app.route('/profile', methods=['POST'])
+@app.route('/profile/adverts', methods=['POST'])
+def start_search(text=''):
+    if request.form["search"]:
         return redirect(f'/search/{request.form["search"]}')
+
+
+@app.route('/search/<text>', methods=['GET'])
+def search(text):
+    search_text = re.sub(r'\W', '', text.lower())
     db_sess = db_session.create_session()
-    ans = db_sess.query(Advert).filter(Advert.name.like(f'%{text}%'))
+    ans = db_sess.query(Advert).filter(Advert.for_search.ilike(f'%{search_text}%'))
     return render_template('searchT.html', title='Поиск', adverts=ans, user=current_user, search=text)
 
 
-@app.route('/configuration', methods=['GET', 'POST'])
+@app.route('/configuration', methods=['GET'])
 def configuration():
-    if request.method == 'POST' and request.form["search"]:
-        return redirect(f'/search/{request.form["search"]}')
     return render_template('configurationT.html', title='Настройки', user=current_user)
 
 
-@app.route('/profile', methods=['GET', 'POST'])
+@app.route('/profile', methods=['GET'])
 def profile():
-    if request.method == 'POST' and request.form["search"]:
-        return redirect(f'/search/{request.form["search"]}')
     return render_template('profileT.html', title='Поиск', user=current_user)
 
 
-@app.route('/profile/adverts')
+@app.route('/profile/adverts', methods=['GET'])
 def adverts():
-    con = sqlite3.connect('db.db')
-    cur = con.cursor()
-    lst = cur.execute(f"""Select * from adverts Where id_person = {current_user.id}""").fetchall()
-    con.close()
+    db_sess = db_session.create_session()
+    lst = db_sess.query(Advert).filter(Advert.id_person == current_user.id)
     return render_template('advertT.html', title='Ваши объявления', user=current_user, advrts=lst)
 
 
@@ -87,7 +89,7 @@ def logout():
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
-    return db_sess.query(User).get(user_id)
+    return db_sess.get(User, user_id)
 
 
 @app.route('/register', methods=['GET', 'POST'])
