@@ -6,6 +6,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from data import db_session
 from data.users import User
 from data.adverts import Advert
+from forms.advertform import AdvertForm
 from forms.loginform import LoginForm
 from forms.register import RegisterForm
 
@@ -33,10 +34,10 @@ def index():
 @app.route('/search/<text>', methods=['POST'])
 @app.route('/configuration', methods=['POST'])
 @app.route('/profile', methods=['POST'])
-@app.route('/profile/adverts', methods=['POST'])
 def start_search(text=''):
-    if request.form["search"]:
-        return redirect(f'/search/{request.form["search"]}')
+    if "search_text" in request.form and request.form["search_text"].strip():
+        return redirect(f'/search/{request.form["search_text"]}')
+    return redirect(request.full_path[:-1])
 
 
 @app.route('/search/<text>', methods=['GET'])
@@ -57,15 +58,43 @@ def profile():
     return render_template('profileT.html', title='Поиск', user=current_user)
 
 
-@app.route('/profile/adverts', methods=['GET'])
+@app.route('/profile/adverts', methods=['GET', "POST"])
 def adverts():
     db_sess = db_session.create_session()
-    lst = db_sess.query(Advert).filter(Advert.id_person == current_user.id)
-    return render_template('advertT.html', title='Ваши объявления', user=current_user, advrts=lst)
+    btn_command = ''
+    if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
+        return redirect(f'/search/{request.form["search_text"]}')
+    elif request.method == 'POST' and 'btn' in request.form:
+        btn_command, id = request.form['btn'].split()
 
+    if btn_command == 'del':
+        lst = db_sess.query(Advert).filter(Advert.id == id).first()
+        db_sess.delete(lst)
+        db_sess.commit()
+    db_sess = db_session.create_session()
+    lst = db_sess.query(Advert).filter(Advert.id_person == current_user.id)
+    return render_template('advertT.html', title='Ваши объявления', user=current_user, advrts=lst,
+                           btn_command=btn_command)
+
+
+@app.route('/profile/adverts/new_advert', methods=['GET', 'POST'])
+def new_advert():
+    if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
+        return redirect(f'/search/{request.form["search_text"]}')
+    form = AdvertForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        advert = Advert(name=form.name.data, id_person=current_user.id, description=form.description.data,
+                      price=form.price.data, for_search=re.sub(r'\W', '', (form.name.data + form.description.data).lower()))
+        db_sess.add(advert)
+        db_sess.commit()
+        return redirect('/profile/adverts')
+    return render_template('advertformT.html', title='Новое объявление', form=form, user=current_user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
+        return redirect(f'/search/{request.form["search_text"]}')
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -93,6 +122,8 @@ def load_user(user_id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
+        return redirect(f'/search/{request.form["search_text"]}')
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:

@@ -2,22 +2,68 @@
 
 {% block content %}
 <h1>Приветствую, {{ current_user.name }}!</h1>
+<a class="btn btn-primary" type="submit" href="/profile/adverts/new_advert">Добавить</a>
 <h3>Ваш id: {{current_user.id}}</h3>
 <div class="card-group">
     <div class="row row-cols-1 row-cols-md-3 g-4">
         {% for advrt in advrts %}
         <div class="col">
             <div class="card h-100">
-                <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826"
-                     class="card-img-top" alt="...">
+                <div id="carouselExampleIndicators" class="carousel slide">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0"
+                                class="active" aria-current="true" aria-label="Slide 0"></button>
+                        {% for i in ['1', '2'] %}
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{i}}"
+                                aria-label="Slide {{i}}"></button>
+                        {% endfor %}
+                    </div>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img src="https://fikiwiki.com/uploads/posts/2022-02/1644984017_1-fikiwiki-com-p-kartinki-zhivotnikh-na-avu-1.jpg"
+                                 class="d-block w-100" alt="...">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://img2.joyreactor.cc/pics/post/full/shuu-Illust-artist-%D0%BA%D1%80%D0%B0%D1%81%D0%B8%D0%B2%D1%8B%D0%B5-%D0%BA%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%BA%D0%B8-art-7850224.jpeg"
+                                 class="d-block w-100" alt="...">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://media.az/photo/880x470/2023/03/22/1679471572_adobe-photoshop-2021_0_large.jpg?v5"
+                                 class="d-block w-100" alt="...">
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+                            data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+                            data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    </button>
+                </div>
                 <div class="card-body">
                     <h5 class="card-title">{{advrt.name}}</h5>
                     <p class="card-text">Номер объявления: {{ advrt.id }}<br>
-                        Описание: {{ advrt.description }}<br>
+                        Описание: {{ advrt.description[:100] }}
+                        {% if advrt.description != advrt.description[:100] %}
+                        ...
+                        {% endif %}
+                        <br>
                         Цена: {{ advrt.price }}<br>
                         Файлы: <a class="nav-link" href='/'>{{ advrt.id_files }}</a></p>
+                    <span style="float:left;">
+                        <form class="d-flex" method="post">
+                            <input type="hidden" name="btn" value="update {{advrt.id}}">
+                            <button class="btn btn-outline-warning" type="submit">Изменить</button>
+                        </form>
+                    </span>
+                    <span style="float:right">
+                        <form class="d-flex" method="post">
+                            <input type="hidden" name="btn" value="del {{advrt.id}}">
+                            <button class="btn btn-outline-danger" type="submit">Удалить</button>
+                        </form>
+                    </span>
                 </div>
-
                 <div class="card-footer">
                     <small class="text-body-secondary">Дата публикации: {{advrt.data}}</small>
                 </div>
