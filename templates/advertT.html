@@ -43,14 +43,20 @@
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">{{advrt.name}}</h5>
-                    <p class="card-text">Номер объявления: {{ advrt.id }}<br>
+                    <div class="card-text">Номер объявления: {{ advrt.id }}<br>
                         Описание: {{ advrt.description[:100] }}
                         {% if advrt.description != advrt.description[:100] %}
                         ...
                         {% endif %}
                         <br>
                         Цена: {{ advrt.price }}<br>
-                        Файлы: <a class="nav-link" href='/'>{{ advrt.id_files }}</a></p>
+                        Файлы:
+                        {% if advrt.id_files != 'Нет' %}
+                            <a class="nav-link" href="/files/{{advrt.id_files}}">{{ advrt.id_files }}</a>
+                        {% else %}
+                            Нет.
+                        {% endif %}
+                        </div>
                     <span style="float:left;">
                         <form class="d-flex" method="post">
                             <input type="hidden" name="btn" value="update {{advrt.id}}">

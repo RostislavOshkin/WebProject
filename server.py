@@ -7,6 +7,7 @@ from data import db_session
 from data.users import User
 from data.adverts import Advert
 from forms.advertform import AdvertForm
+from data.files import File
 from forms.loginform import LoginForm
 from forms.register import RegisterForm
 
@@ -29,6 +30,7 @@ def index():
     return render_template('index.html', title='Главная страница',
                            user=current_user)
 
+
 @app.route('/', methods=['POST'])
 @app.route('/index', methods=['POST'])
 @app.route('/search/<text>', methods=['POST'])
@@ -46,6 +48,21 @@ def search(text):
     db_sess = db_session.create_session()
     ans = db_sess.query(Advert).filter(Advert.for_search.ilike(f'%{search_text}%'))
     return render_template('searchT.html', title='Поиск', adverts=ans, user=current_user, search=text)
+
+
+@app.route('/files/<id>', methods=['GET'])
+@app.route('/profile/files/<id>', methods=['GET'])
+def get_files(id):
+    db_sess = db_session.create_session()
+    ans = db_sess.query(File).filter(File.advrt_id == int(id[0]))
+    return render_template('filesGetT.html', title='Поиск', files=ans, user=current_user)
+
+
+@app.route('/file/<id>', methods=['GET'])
+def get_file(id):
+    db_sess = db_session.create_session()
+    ans = db_sess.query(File.file).filter(File.id == int(id[0]))
+    return ans[0][0]
 
 
 @app.route('/configuration', methods=['GET'])
@@ -85,11 +102,13 @@ def new_advert():
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         advert = Advert(name=form.name.data, id_person=current_user.id, description=form.description.data,
-                      price=form.price.data, for_search=re.sub(r'\W', '', (form.name.data + form.description.data).lower()))
+                        price=form.price.data,
+                        for_search=re.sub(r'\W', '', (form.name.data + form.description.data).lower()))
         db_sess.add(advert)
         db_sess.commit()
         return redirect('/profile/adverts')
     return render_template('advertformT.html', title='Новое объявление', form=form, user=current_user)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
