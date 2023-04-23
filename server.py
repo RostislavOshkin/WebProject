@@ -66,11 +66,12 @@ def adverts():
         return redirect(f'/search/{request.form["search_text"]}')
     elif request.method == 'POST' and 'btn' in request.form:
         btn_command, id = request.form['btn'].split()
-
     if btn_command == 'del':
         lst = db_sess.query(Advert).filter(Advert.id == id).first()
         db_sess.delete(lst)
         db_sess.commit()
+    if btn_command == 'update':
+        return redirect(f'/profile/adverts/update_advert/{id}')
     db_sess = db_session.create_session()
     lst = db_sess.query(Advert).filter(Advert.id_person == current_user.id)
     return render_template('advertT.html', title='Ваши объявления', user=current_user, advrts=lst,
@@ -89,7 +90,27 @@ def new_advert():
         db_sess.add(advert)
         db_sess.commit()
         return redirect('/profile/adverts')
-    return render_template('advertformT.html', title='Новое объявление', form=form, user=current_user)
+    advert = Advert(name='', id_person='', description='', price='', for_search='')
+    return render_template('advertformT.html', title='Новое объявление', form=form, user=current_user, advert=advert)
+
+
+@app.route('/profile/adverts/update_advert/<id>', methods=['GET', 'POST'])
+def update_advert(id):
+    if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
+        return redirect(f'/search/{request.form["search_text"]}')
+    form = AdvertForm()
+    db_sess = db_session.create_session()
+    advert = db_sess.query(Advert).filter(Advert.id == id).first()
+    if form.validate_on_submit():
+        advert.name = form.name.data
+        advert.description = form.description.data
+        advert.price = form.price.data
+        advert.for_search = re.sub(r'\W', '', (form.name.data + form.description.data).lower())
+        db_sess.commit()
+        return redirect('/profile/adverts')
+    return render_template('advertformT.html', title='Изменить объявление', form=form, user=current_user,
+                           advert=advert)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

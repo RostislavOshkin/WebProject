@@ -10,22 +10,24 @@
     }
     .card {
         width: 50%;
-        margin: auto;
+        margin: 1em;
+        float:center;
     }
+
 </style>
 <div class="container">
     <div class="d-flex">
-        <div class="card">
+        <div class="card justify-content-md-center">
             <div class="card-header">
-                <h3>Новое объявление</h3>
+                <h3>{{title}}</h3>
             </div>
             <div class="card-body">
                 <form action="" method="post">
                     {{ form.hidden_tag() }}
                     <p>
                         {{ form.name.label }}<br>
-                        {{ form.name(class="form-control") }}<br>
-                    {% for error in form.name.errors %}
+                        {{ form.name(class="form-control", value=advert.name) }}<br>
+                        {% for error in form.name.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}
                     </p>
@@ -33,8 +35,9 @@
                     </p>
                     <p>
                         {{ form.description.label }}<br>
+                        {% set f = form.description.process_data(advert.description) %}
                         {{ form.description(class="form-control") }}<br>
-                    {% for error in form.description.errors %}
+                        {% for error in form.description.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}
                     </p>
@@ -42,13 +45,14 @@
                     </p>
                     <p>
                         {{ form.price.label }}<br>
-                        {{ form.price(class="form-control") }}<br>
-                    {% for error in form.price.errors %}
+                        {{ form.price(class="form-control", value=advert.price) }}<br>
+                        {% for error in form.price.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}
                     </p>
                     {% endfor %}
                     <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+                    <a class="btn btn-secondary" type="button" href="/profile/adverts">Отмена</a>
                     {{message}}
                 </form>
             </div>
