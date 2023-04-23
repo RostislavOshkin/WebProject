@@ -1,4 +1,5 @@
 import datetime
+import re
 import sqlalchemy
 from sqlalchemy import orm
 from .db_session import SqlAlchemyBase
@@ -13,9 +14,8 @@ class Advert(SqlAlchemyBase):
     description = sqlalchemy.Column(sqlalchemy.String)
     price = sqlalchemy.Column(sqlalchemy.String, default='Договорная')
     data = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
-    id_files = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("files.id"))
-    for_search = sqlalchemy.Column(sqlalchemy.String,
-                                   default=lambda x: re.sub(r'\W', '', (x.name + x.description).lower()))
+    id_files = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("files.id"), default='Нет')
+    for_search = sqlalchemy.Column(sqlalchemy.String)
 
     user = orm.relationship('User')
     files = orm.relationship("File")
