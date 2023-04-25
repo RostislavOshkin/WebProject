@@ -2,8 +2,9 @@ import re
 
 from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_restful import Api
 
-from data import db_session
+from data import db_session, users_resources, adverts_resources
 from data.users import User
 from data.files import File
 from data.adverts import Advert
@@ -16,6 +17,8 @@ from datetime import timedelta
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
+
+api = Api(app, catch_all_404s=True)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -183,4 +186,15 @@ def register():
 
 if __name__ == '__main__':
     db_session.global_init("db.db")
+
+    # для списка пользователей
+    api.add_resource(users_resources.UsersListResource, '/api/users')
+    # для одного пользователя
+    api.add_resource(users_resources.UsersResource, '/api/users/<int:user_id>')
+
+    # для списка объявлений
+    api.add_resource(adverts_resources.AdvertsListResource, '/api/adverts')
+    # для одного объявления
+    api.add_resource(adverts_resources.AdvertsResource, '/api/adverts/<int:advert_id>')
+
     app.run(port=port, host=host)

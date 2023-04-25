@@ -3,3 +3,5 @@ flask-login
 sqlalchemy
 flask_wtf
 wtforms
+SQLAlchemy-serializer
+flask_restful
