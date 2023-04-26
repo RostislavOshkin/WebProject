@@ -1,9 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Приветствую, {{ current_user.name }}!</h1>
-<h3>Ваш id: {{current_user.id}}</h3>
-<div>Здесь будет ваш профиль.</div>
-<h3>Описание: {{ current_user.description }}</h3>
-<a class="nav-link" href="/profile/adverts">Ваши объявления</a>
+<h1>Профиль</h1>
+<form class="d-flex" method="post">
+    <input type="hidden" name="btn" value="advertsPRF#">
+    <button class="btn btn-outline-danger" type="submit">Ваши объявления</button>
+</form>
+<table class="table">
+    <tbody>
+    <tr>
+        <th scope="row">Имя</th>
+        <td>{{current_user.name}}</td>
+    </tr>
+    <tr>
+        <th scope="row">id</th>
+        <td>{{current_user.id}}</td>
+    </tr>
+    <tr>
+        <th scope="row">Информация об аккаунте</th>
+        <td>{{current_user.description}}</td>
+    </tr>
+    </tbody>
+</table>
+
 {% endblock %}

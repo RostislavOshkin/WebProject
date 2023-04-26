@@ -1,8 +1,7 @@
 import re
-
+import sqlite3
 from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-
 from data import db_session
 from data.users import User
 from data.adverts import Advert
@@ -10,13 +9,14 @@ from forms.advertform import AdvertForm
 from data.files import File
 from forms.loginform import LoginForm
 from forms.register import RegisterForm
-
+from werkzeug.utils import secure_filename
 from datetime import timedelta
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
-
+app.config['UPLOAD_FOLDER'] = 'local'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -39,6 +39,8 @@ def index():
 def start_search(text=''):
     if "search_text" in request.form and request.form["search_text"].strip():
         return redirect(f'/search/{request.form["search_text"]}')
+    if 'btn' in request.form and request.form['btn'] == 'advertsPRF#':
+        return redirect(f'/profile/adverts')
     return redirect(request.full_path[:-1])
 
 
@@ -72,7 +74,8 @@ def configuration():
 
 @app.route('/profile', methods=['GET'])
 def profile():
-    return render_template('profileT.html', title='Поиск', user=current_user)
+    if request.method == 'GET':
+        return render_template('profileT.html', title='Поиск', user=current_user)
 
 
 @app.route('/profile/adverts', methods=['GET', "POST"])
@@ -88,10 +91,43 @@ def adverts():
         lst = db_sess.query(Advert).filter(Advert.id == id).first()
         db_sess.delete(lst)
         db_sess.commit()
+    if btn_command == '/':
+        return redirect(f'/profile/adverts/files/download/{id}/{current_user.id}')
     db_sess = db_session.create_session()
     lst = db_sess.query(Advert).filter(Advert.id_person == current_user.id)
     return render_template('advertT.html', title='Ваши объявления', user=current_user, advrts=lst,
                            btn_command=btn_command)
+
+
+@app.route('/profile/adverts/files/download/<id_advrt>/<id_person>', methods=['GET', "POST"])
+def selecting_files_in_advert(id_advrt, id_person):
+    if request.method == 'GET':
+        return render_template('fileSelectT.html', title='Загрузка файлов', user=current_user)
+    if current_user.id == int(id_person):
+        saver(request.files['file'])
+        con = sqlite3.connect('db.db')
+        filename = secure_filename(request.files['file'].filename)
+        cur = con.cursor()
+        cur.execute(f"Insert INTO files (advrt_id, name, file) VALUES(?, ?, ?);", [id_advrt, filename, open(f'local/{filename}', mode='br').read()])
+        con.commit()
+        con.close()
+        poper(filename)
+    return render_template('fileSelectT.html', title='Загрузка файлов', user=current_user)
+
+
+def saver(file):
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'docx', 'bmp'}
+    filename = file.filename
+    if '.' in filename and filename.split('.')[1].lower() in ALLOWED_EXTENSIONS:
+        # безопастно извлекаем имя файла
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename)))
+        print("success saver")
+
+
+def poper(filename):
+    if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], filename)):
+        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        print("success poper")
 
 
 @app.route('/profile/adverts/new_advert', methods=['GET', 'POST'])
