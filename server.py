@@ -22,6 +22,7 @@ app.config['UPLOAD_FOLDER'] = 'local'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+api = Api(app, catch_all_404s=True)
 host = '127.0.0.1'
 port = 8080
 
@@ -114,7 +115,7 @@ def selecting_files_in_advert(id_advrt, id_person):
         con.commit()
         con.close()
         poper(filename)
-    return render_template('fileSelectT.html', title='Загрузка файлов', user=current_user)
+    return redirect(f'/profile/adverts')
 
 
 def saver(file):
