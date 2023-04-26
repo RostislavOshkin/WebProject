@@ -2,12 +2,14 @@ import re
 import sqlite3
 from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from data import db_session
+from flask_restful import Api
+from data import db_session, users_resources, adverts_resources
 from data.users import User
 from data.adverts import Advert
 from forms.advertform import AdvertForm
 from data.files import File
 from forms.loginform import LoginForm
+from forms.advertform import AdvertForm
 from forms.register import RegisterForm
 from werkzeug.utils import secure_filename
 from datetime import timedelta
@@ -74,8 +76,7 @@ def configuration():
 
 @app.route('/profile', methods=['GET'])
 def profile():
-    if request.method == 'GET':
-        return render_template('profileT.html', title='Поиск', user=current_user)
+    return render_template('profileT.html', title='Поиск', user=current_user)
 
 
 @app.route('/profile/adverts', methods=['GET', "POST"])
@@ -86,13 +87,14 @@ def adverts():
         return redirect(f'/search/{request.form["search_text"]}')
     elif request.method == 'POST' and 'btn' in request.form:
         btn_command, id = request.form['btn'].split()
-
     if btn_command == 'del':
         lst = db_sess.query(Advert).filter(Advert.id == id).first()
         db_sess.delete(lst)
         db_sess.commit()
     if btn_command == '/':
         return redirect(f'/profile/adverts/files/download/{id}/{current_user.id}')
+    if btn_command == 'update':
+        return redirect(f'/profile/adverts/update_advert/{id}')
     db_sess = db_session.create_session()
     lst = db_sess.query(Advert).filter(Advert.id_person == current_user.id)
     return render_template('advertT.html', title='Ваши объявления', user=current_user, advrts=lst,
@@ -143,7 +145,26 @@ def new_advert():
         db_sess.add(advert)
         db_sess.commit()
         return redirect('/profile/adverts')
-    return render_template('advertformT.html', title='Новое объявление', form=form, user=current_user)
+    advert = Advert(name='', id_person='', description='', price='', for_search='')
+    return render_template('advertformT.html', title='Новое объявление', form=form, user=current_user, advert=advert)
+
+
+@app.route('/profile/adverts/update_advert/<id>', methods=['GET', 'POST'])
+def update_advert(id):
+    if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
+        return redirect(f'/search/{request.form["search_text"]}')
+    form = AdvertForm()
+    db_sess = db_session.create_session()
+    advert = db_sess.query(Advert).filter(Advert.id == id).first()
+    if form.validate_on_submit():
+        advert.name = form.name.data
+        advert.description = form.description.data
+        advert.price = form.price.data
+        advert.for_search = re.sub(r'\W', '', (form.name.data + form.description.data).lower())
+        db_sess.commit()
+        return redirect('/profile/adverts')
+    return render_template('advertformT.html', title='Изменить объявление', form=form, user=current_user,
+                           advert=advert)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -198,4 +219,15 @@ def register():
 
 if __name__ == '__main__':
     db_session.global_init("db.db")
+
+    # для списка пользователей
+    api.add_resource(users_resources.UsersListResource, '/api/users')
+    # для одного пользователя
+    api.add_resource(users_resources.UsersResource, '/api/users/<int:user_id>')
+
+    # для списка объявлений
+    api.add_resource(adverts_resources.AdvertsListResource, '/api/adverts')
+    # для одного объявления
+    api.add_resource(adverts_resources.AdvertsResource, '/api/adverts/<int:advert_id>')
+
     app.run(port=port, host=host)
