@@ -14,7 +14,7 @@ class Advert(SqlAlchemyBase):
     description = sqlalchemy.Column(sqlalchemy.String)
     price = sqlalchemy.Column(sqlalchemy.String, default='Договорная')
     data = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
-    id_files = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("files.id"), default='Нет')
+    id_files = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("files.id"), autoincrement=True)
     for_search = sqlalchemy.Column(sqlalchemy.String)
 
     user = orm.relationship('User')
