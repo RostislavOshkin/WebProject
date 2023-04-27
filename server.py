@@ -59,8 +59,13 @@ def search(text):
 @app.route('/profile/files/<id>', methods=['GET'])
 def get_files(id):
     db_sess = db_session.create_session()
-    ans = db_sess.query(File).filter(File.advrt_id == int(id[0]))
-    return render_template('filesGetT.html', title='Поиск', files=ans, user=current_user)
+    if 'None' not in id:
+        ans = db_sess.query(File).filter(File.advrt_id == int(id))
+    else:
+        ans = None
+    if ans is None:
+        return "<h1>Прикреплённых файлов нет.</h1>"
+    return render_template('filesGetT.html', title='Файлы', files=ans, user=current_user)
 
 
 @app.route('/file/<id>', methods=['GET'])
@@ -111,7 +116,8 @@ def selecting_files_in_advert(id_advrt, id_person):
         con = sqlite3.connect('db.db')
         filename = secure_filename(request.files['file'].filename)
         cur = con.cursor()
-        cur.execute(f"Insert INTO files (advrt_id, name, file) VALUES(?, ?, ?);", [id_advrt, filename, open(f'local/{filename}', mode='br').read()])
+        cur.execute(f"Insert INTO files (advrt_id, name, file) VALUES(?, ?, ?);",
+                    [id_advrt, filename, open(f'local/{filename}', mode='br').read()])
         con.commit()
         con.close()
         poper(filename)
@@ -140,9 +146,14 @@ def new_advert():
     form = AdvertForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
+        con = sqlite3.connect('db.db')
+        cur = con.cursor()
         advert = Advert(name=form.name.data, id_person=current_user.id, description=form.description.data,
                         price=form.price.data,
-                        for_search=re.sub(r'\W', '', (form.name.data + form.description.data).lower()))
+                        id_files=cur.execute(f"""Select MAX(id_files) + 1 From adverts""").fetchone()[0],
+                        for_search=re.sub(r'\W', '', (
+                                form.name.data + form.description.data).lower()))
+        con.close()
         db_sess.add(advert)
         db_sess.commit()
         return redirect('/profile/adverts')

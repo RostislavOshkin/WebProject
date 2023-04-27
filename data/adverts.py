@@ -8,7 +8,7 @@ from sqlalchemy_serializer import SerializerMixin
 class Advert(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'adverts'
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     id_person = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     description = sqlalchemy.Column(sqlalchemy.String)
