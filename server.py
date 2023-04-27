@@ -6,6 +6,7 @@ from flask_restful import Api
 from data import db_session, users_resources, adverts_resources
 from data.users import User
 from data.adverts import Advert
+from data.config import Config
 from forms.advertform import AdvertForm
 from data.files import File
 from forms.loginform import LoginForm
@@ -44,6 +45,12 @@ def start_search(text=''):
         return redirect(f'/search/{request.form["search_text"]}')
     if 'btn' in request.form and request.form['btn'] == 'advertsPRF#':
         return redirect(f'/profile/adverts')
+    if 'btn' in request.form and request.form['btn'] == 'configsPRF#':
+        db_sess = db_session.create_session()
+        i = db_sess.query(Config).filter(Config.person_id == current_user.id).first()
+        i.search = not i.search
+        db_sess.add(i)
+        db_sess.commit()
     return redirect(request.full_path[:-1])
 
 
@@ -51,7 +58,10 @@ def start_search(text=''):
 def search(text):
     search_text = re.sub(r'\W', '', text.lower())
     db_sess = db_session.create_session()
-    ans = db_sess.query(Advert).filter(Advert.for_search.ilike(f'%{search_text}%'))
+    if db_sess.query(Config).filter(Config.person_id == current_user.id)[0].search:
+        ans = db_sess.query(Advert).filter(Advert.name.ilike(f'%{search_text}%'))
+    else:
+        ans = db_sess.query(Advert).filter(Advert.for_search.ilike(f'%{search_text}%'))
     return render_template('searchT.html', title='Поиск', adverts=ans, user=current_user, search=text)
 
 
@@ -75,9 +85,11 @@ def get_file(id):
     return ans[0][0]
 
 
-@app.route('/configuration', methods=['GET'])
+@app.route('/configuration', methods=['GET', "POST"])
 def configuration():
-    return render_template('configurationT.html', title='Настройки', user=current_user)
+    db_sess = db_session.create_session()
+    bolean = db_sess.query(Config).filter(Config.person_id == current_user.id)[0].search
+    return render_template('configurationT.html', title='Настройки', user=current_user, bolean=bolean)
 
 
 @app.route('/profile', methods=['GET'])
@@ -189,6 +201,10 @@ def login():
         user = db_sess.query(User).filter(User.address == form.address.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
+            if not db_sess.query(Config).filter(Config.person_id == current_user.id).count():
+                config = Config(person_id=user.id)
+                db_sess.add(config)
+                db_sess.commit()
             return redirect("/")
         return render_template('loginT.html', title='Авторизация', message="Неправильный логин или пароль",
                                form=form, user=current_user)

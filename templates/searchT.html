@@ -21,7 +21,12 @@
                         {% endif %}
                         <br>
                         Цена: {{item.price}}<br>
-                        Файлы: <a class="nav-link" href='/'>{{ item.id_files }}</a></p>
+                        Файлы:
+                        {% if item.id_files != 'Нет' %}
+                            <a class="nav-link" href="/files/{{item.id_files}}">Файлы</a>
+                        {% else %}
+                            Нет.
+                        {% endif %}
                 </div>
                 <div class="card-footer">
                     <small class="text-body-secondary">Дата публикации: {{item.data}}</small>

@@ -2,5 +2,14 @@
 
 {% block content %}
 <h1>Приветствую!</h1>
-<div>Здесь будут находится Настройки.</div>
+<span style="float:left;">
+    <form class="d-flex" method="post">
+        <input type="hidden" name="btn" value="configsPRF#">
+        {% if bolean == 1 %}
+            <button class="btn btn-outline-warning" type="submit">Включить не строгий поиск.</button>
+        {% else %}
+            <button class="btn btn-outline-warning" type="submit">Включить строгий поиск.</button>
+        {% endif %}
+    </form>
+</span>
 {% endblock %}
