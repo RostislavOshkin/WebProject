@@ -1,20 +1,23 @@
 import re
+import os
 import sqlite3
+from datetime import timedelta
+
 from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_restful import Api
+
 from data import db_session, users_resources, adverts_resources
 from data.users import User
 from data.adverts import Advert
 from data.config import Config
-from forms.advertform import AdvertForm
 from data.files import File
+
 from forms.loginform import LoginForm
 from forms.advertform import AdvertForm
 from forms.register import RegisterForm
 from werkzeug.utils import secure_filename
-from datetime import timedelta
-import os
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -24,10 +27,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 api = Api(app, catch_all_404s=True)
-host = '127.0.0.1'
-port = 8080
 
 
+# главная страница
 @app.route('/', methods=['GET'])
 @app.route('/index', methods=['GET'])
 def index():
@@ -35,6 +37,7 @@ def index():
                            user=current_user)
 
 
+# инициализация поиска
 @app.route('/', methods=['POST'])
 @app.route('/index', methods=['POST'])
 @app.route('/search/<text>', methods=['POST'])
@@ -45,15 +48,10 @@ def start_search(text=''):
         return redirect(f'/search/{request.form["search_text"]}')
     if 'btn' in request.form and request.form['btn'] == 'advertsPRF#':
         return redirect(f'/profile/adverts')
-    if 'btn' in request.form and request.form['btn'] == 'configsPRF#':
-        db_sess = db_session.create_session()
-        i = db_sess.query(Config).filter(Config.person_id == current_user.id).first()
-        i.search = not i.search
-        db_sess.add(i)
-        db_sess.commit()
     return redirect(request.full_path[:-1])
 
 
+# поиск
 @app.route('/search/<text>', methods=['GET'])
 def search(text):
     search_text = re.sub(r'\W', '', text.lower())
@@ -65,6 +63,7 @@ def search(text):
     return render_template('searchT.html', title='Поиск', adverts=ans, user=current_user, search=text)
 
 
+# открытие прикреплённых к объявлению файлов
 @app.route('/files/<id>', methods=['GET'])
 @app.route('/profile/files/<id>', methods=['GET'])
 def get_files(id):
@@ -78,6 +77,7 @@ def get_files(id):
     return render_template('filesGetT.html', title='Файлы', files=ans, user=current_user)
 
 
+# скачивание файла
 @app.route('/file/<id>', methods=['GET'])
 def get_file(id):
     db_sess = db_session.create_session()
@@ -85,6 +85,7 @@ def get_file(id):
     return ans[0][0]
 
 
+# настройки
 @app.route('/configuration', methods=['GET', "POST"])
 def configuration():
     db_sess = db_session.create_session()
@@ -92,11 +93,14 @@ def configuration():
     return render_template('configurationT.html', title='Настройки', user=current_user, bolean=bolean)
 
 
+# открытие профиля
 @app.route('/profile', methods=['GET'])
 def profile():
     return render_template('profileT.html', title='Поиск', user=current_user)
 
 
+
+# открытие объявлений
 @app.route('/profile/adverts', methods=['GET', "POST"])
 def adverts():
     db_sess = db_session.create_session()
@@ -119,19 +123,18 @@ def adverts():
                            btn_command=btn_command)
 
 
+
 @app.route('/profile/adverts/files/download/<id_advrt>/<id_person>', methods=['GET', "POST"])
 def selecting_files_in_advert(id_advrt, id_person):
     if request.method == 'GET':
         return render_template('fileSelectT.html', title='Загрузка файлов', user=current_user)
     if current_user.id == int(id_person):
         saver(request.files['file'])
-        con = sqlite3.connect('db.db')
+        db_sess = db_session.create_session()
         filename = secure_filename(request.files['file'].filename)
-        cur = con.cursor()
-        cur.execute(f"Insert INTO files (advrt_id, name, file) VALUES(?, ?, ?);",
-                    [id_advrt, filename, open(f'local/{filename}', mode='br').read()])
-        con.commit()
-        con.close()
+        file = File(advrt_id=id_advrt, name=filename, file=open(f'local/{filename}', mode='br').read())
+        db_sess.add(file)
+        db_sess.commit()
         poper(filename)
     return redirect(f'/profile/adverts')
 
@@ -151,6 +154,7 @@ def poper(filename):
         print("success poper")
 
 
+# создать новое объявление
 @app.route('/profile/adverts/new_advert', methods=['GET', 'POST'])
 def new_advert():
     if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
@@ -163,8 +167,7 @@ def new_advert():
         advert = Advert(name=form.name.data, id_person=current_user.id, description=form.description.data,
                         price=form.price.data,
                         id_files=cur.execute(f"""Select MAX(id_files) + 1 From adverts""").fetchone()[0],
-                        for_search=re.sub(r'\W', '', (
-                                form.name.data + form.description.data).lower()))
+                        for_search=re.sub(r'\W', '', (form.name.data + form.description.data).lower()))
         con.close()
         db_sess.add(advert)
         db_sess.commit()
@@ -173,6 +176,7 @@ def new_advert():
     return render_template('advertformT.html', title='Новое объявление', form=form, user=current_user, advert=advert)
 
 
+# изменение объявления
 @app.route('/profile/adverts/update_advert/<id>', methods=['GET', 'POST'])
 def update_advert(id):
     if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
@@ -191,6 +195,7 @@ def update_advert(id):
                            advert=advert)
 
 
+# вход в систему
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
@@ -211,11 +216,13 @@ def login():
     return render_template('loginT.html', title='Авторизация', form=form, user=current_user)
 
 
+# выход из системы
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect("/")
+
 
 
 @login_manager.user_loader
@@ -224,6 +231,7 @@ def load_user(user_id):
     return db_sess.get(User, user_id)
 
 
+# регистрация пользователей
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
@@ -258,4 +266,4 @@ if __name__ == '__main__':
     # для одного объявления
     api.add_resource(adverts_resources.AdvertsResource, '/api/adverts/<int:advert_id>')
 
-    app.run(port=port, host=host)
+    app.run()
