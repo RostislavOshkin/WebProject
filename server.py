@@ -18,7 +18,6 @@ from forms.advertform import AdvertForm
 from forms.register import RegisterForm
 from werkzeug.utils import secure_filename
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
@@ -48,6 +47,12 @@ def start_search(text=''):
         return redirect(f'/search/{request.form["search_text"]}')
     if 'btn' in request.form and request.form['btn'] == 'advertsPRF#':
         return redirect(f'/profile/adverts')
+    if 'btn' in request.form and request.form['btn'] == 'configsPRF#':
+        db_sess = db_session.create_session()
+        i = db_sess.query(Config).filter(Config.person_id == current_user.id).first()
+        i.search = not i.search
+        db_sess.add(i)
+        db_sess.commit()
     return redirect(request.full_path[:-1])
 
 
@@ -88,7 +93,7 @@ def get_file(id):
 
 
 # настройки
-@app.route('/configuration', methods=['GET', "POST"])
+@app.route('/configuration', methods=['GET'])
 def configuration():
     db_sess = db_session.create_session()
     if not current_user.is_authenticated:
@@ -101,7 +106,6 @@ def configuration():
 @app.route('/profile', methods=['GET'])
 def profile():
     return render_template('profileT.html', title='Поиск', user=current_user)
-
 
 
 # открытие объявлений
@@ -125,7 +129,6 @@ def adverts():
     lst = db_sess.query(Advert).filter(Advert.id_person == current_user.id)
     return render_template('advertT.html', title='Ваши объявления', user=current_user, advrts=lst,
                            btn_command=btn_command)
-
 
 
 @app.route('/profile/adverts/files/download/<id_advrt>/<id_person>', methods=['GET', "POST"])
@@ -226,7 +229,6 @@ def login():
 def logout():
     logout_user()
     return redirect("/")
-
 
 
 @login_manager.user_loader
