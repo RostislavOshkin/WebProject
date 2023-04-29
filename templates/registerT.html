@@ -59,6 +59,15 @@
                     {% endfor %}
                     </p>
                     <p>
+                        {{ form.communication.label }}<br>
+                        {{ form.communication(class="form-control") }}<br>
+                        {% for error in form.communication.errors %}
+                    <p class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </p>
+                    {% endfor %}
+                    </p>
+                    <p>
                         {{ form.description.label }}<br>
                         {{ form.description(class="form-control") }}<br>
                         {% for error in form.description.errors %}

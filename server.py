@@ -48,6 +48,12 @@ def start_search(text=''):
         return redirect(f'/search/{request.form["search_text"]}')
     if 'btn' in request.form and request.form['btn'] == 'advertsPRF#':
         return redirect(f'/profile/adverts')
+    if 'btn' in request.form and request.form['btn'] == 'configsPRF#':
+        db_sess = db_session.create_session()
+        i = db_sess.query(Config).filter(Config.person_id == current_user.id).first()
+        i.search = not i.search
+        db_sess.add(i)
+        db_sess.commit()
     return redirect(request.full_path[:-1])
 
 
@@ -56,7 +62,9 @@ def start_search(text=''):
 def search(text):
     search_text = re.sub(r'\W', '', text.lower())
     db_sess = db_session.create_session()
-    if db_sess.query(Config).filter(Config.person_id == current_user.id)[0].search:
+    if not current_user.is_authenticated:
+        ans = db_sess.query(Advert).filter(Advert.for_search.ilike(f'%{search_text}%'))
+    elif db_sess.query(Config).filter(Config.person_id == current_user.id)[0].search:
         ans = db_sess.query(Advert).filter(Advert.name.ilike(f'%{search_text}%'))
     else:
         ans = db_sess.query(Advert).filter(Advert.for_search.ilike(f'%{search_text}%'))
@@ -86,9 +94,11 @@ def get_file(id):
 
 
 # настройки
-@app.route('/configuration', methods=['GET', "POST"])
+@app.route('/configuration', methods=['GET'])
 def configuration():
     db_sess = db_session.create_session()
+    if not current_user.is_authenticated:
+        return "<h1>Необходимо войти, чтобы пользоваться этим.</h1>"
     bolean = db_sess.query(Config).filter(Config.person_id == current_user.id)[0].search
     return render_template('configurationT.html', title='Настройки', user=current_user, bolean=bolean)
 
@@ -99,29 +109,24 @@ def profile():
     return render_template('profileT.html', title='Поиск', user=current_user)
 
 
-
 # открытие объявлений
 @app.route('/profile/adverts', methods=['GET', "POST"])
 def adverts():
+    btn_command, id = '', ''
     db_sess = db_session.create_session()
-    btn_command = ''
     if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
         return redirect(f'/search/{request.form["search_text"]}')
     elif request.method == 'POST' and 'btn' in request.form:
         btn_command, id = request.form['btn'].split()
     if btn_command == 'del':
-        lst = db_sess.query(Advert).filter(Advert.id == id).first()
-        db_sess.delete(lst)
-        db_sess.commit()
+        return redirect(f'/profile/adverts/delete_advert/{id}')
     if btn_command == '/':
         return redirect(f'/profile/adverts/files/download/{id}/{current_user.id}')
     if btn_command == 'update':
         return redirect(f'/profile/adverts/update_advert/{id}')
-    db_sess = db_session.create_session()
     lst = db_sess.query(Advert).filter(Advert.id_person == current_user.id)
     return render_template('advertT.html', title='Ваши объявления', user=current_user, advrts=lst,
                            btn_command=btn_command)
-
 
 
 @app.route('/profile/adverts/files/download/<id_advrt>/<id_person>', methods=['GET', "POST"])
@@ -195,6 +200,19 @@ def update_advert(id):
                            advert=advert)
 
 
+# удалить объявление
+@app.route('/profile/adverts/delete_advert/<id>', methods=['GET', 'POST'])
+def delete_advert(id):
+    db_sess = db_session.create_session()
+    del_advert = db_sess.query(Advert).filter(Advert.id == id).first()
+    if request.method == 'POST':
+        db_sess.delete(del_advert)
+        db_sess.commit()
+        return redirect('/profile/adverts')
+    return render_template('deletion_confirmation.html', text=f"объявление \"{del_advert.name}\"", user=current_user)
+
+
+
 # вход в систему
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -224,7 +242,6 @@ def logout():
     return redirect("/")
 
 
-
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
@@ -245,12 +262,27 @@ def register():
         if db_sess.query(User).filter(User.address == form.address.data).first():
             return render_template('registerT.html', title='Регистрация', form=form,
                                    message="Такой пользователь уже есть", user=current_user)
-        user = User(name=form.name.data, address=form.address.data, description=form.description.data)
+        user = User(name=form.name.data,
+                    address=form.address.data,
+                    description=form.description.data,
+                    communication=form.communication.data)
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
         return redirect('/login')
     return render_template('registerT.html', title='Регистрация', form=form, user=current_user)
+
+
+# удаление пользователя
+@app.route('/profile/delete_profile', methods=['GET', 'POST'])
+def delete_profile():
+    if request.method == 'POST':
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        db_sess.delete(user)
+        db_sess.commit()
+        return logout()
+    return render_template('deletion_confirmation.html', text="данный профиль", user=current_user)
 
 
 if __name__ == '__main__':

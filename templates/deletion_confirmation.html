@@ -13,11 +13,13 @@
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
+    <title>Подтвердите удаление</title>
 </head>
 <body>
-<form enctype="multipart/form-data" method="post" action="">
-    <input name="file" type="file"/>
-    <input type="submit" value="submit"/>
+<h1>Вы точно хотите безвозвратно удалить {{ text }}?</h1>
+<form class="d-flex" method="post">
+    <button class="btn btn-danger" type="submit">Удалить</button>
+    <a class="btn btn-primary" type="button" href="/profile">Отмена</a>
 </form>
 </body>
 </html>
