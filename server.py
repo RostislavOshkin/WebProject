@@ -4,7 +4,7 @@ import sqlite3
 from datetime import timedelta
 
 from flask import Flask, render_template, redirect, request
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, AnonymousUserMixin
 from flask_restful import Api
 
 from data import db_session, users_resources, adverts_resources
@@ -17,7 +17,6 @@ from forms.loginform import LoginForm
 from forms.advertform import AdvertForm
 from forms.register import RegisterForm
 from werkzeug.utils import secure_filename
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
