@@ -4,7 +4,7 @@ import sqlite3
 from datetime import timedelta
 
 from flask import Flask, render_template, redirect, request
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, AnonymousUserMixin
 from flask_restful import Api
 
 from data import db_session, users_resources, adverts_resources
@@ -56,7 +56,9 @@ def start_search(text=''):
 def search(text):
     search_text = re.sub(r'\W', '', text.lower())
     db_sess = db_session.create_session()
-    if db_sess.query(Config).filter(Config.person_id == current_user.id)[0].search:
+    if not current_user.is_authenticated:
+        ans = db_sess.query(Advert).filter(Advert.for_search.ilike(f'%{search_text}%'))
+    elif db_sess.query(Config).filter(Config.person_id == current_user.id)[0].search:
         ans = db_sess.query(Advert).filter(Advert.name.ilike(f'%{search_text}%'))
     else:
         ans = db_sess.query(Advert).filter(Advert.for_search.ilike(f'%{search_text}%'))
@@ -89,6 +91,8 @@ def get_file(id):
 @app.route('/configuration', methods=['GET', "POST"])
 def configuration():
     db_sess = db_session.create_session()
+    if not current_user.is_authenticated:
+        return "<h1>Необходимо войти, чтобы пользоваться этим.</h1>"
     bolean = db_sess.query(Config).filter(Config.person_id == current_user.id)[0].search
     return render_template('configurationT.html', title='Настройки', user=current_user, bolean=bolean)
 
