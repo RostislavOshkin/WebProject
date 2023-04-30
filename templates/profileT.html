@@ -20,6 +20,10 @@
         <th scope="row">Информация об аккаунте</th>
         <td>{{current_user.description}}</td>
     </tr>
+    <tr>
+        <th scope="row">Как со мной можно связаться</th>
+        <td>{{current_user.communication}}</td>
+    </tr>
     </tbody>
 </table>
 <a class="btn btn-outline-danger" type="button" href="/profile/delete_profile">Удалить профиль</a>
