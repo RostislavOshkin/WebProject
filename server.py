@@ -70,16 +70,22 @@ def search(text):
     return render_template('searchT.html', title='Поиск', adverts=ans, user=current_user, search=text)
 
 
+# descrAdvrt
+@app.route('/advert/<id>', methods=['GET'])
+def advert_descr(id):
+    db_sess = db_session.create_session()
+    adv = db_sess.query(Advert).filter(Advert.id == int(id))
+    return render_template('descriptionAdvertT.html', title='Объявление', advert=adv[0], user=current_user)
+
+
 # открытие прикреплённых к объявлению файлов
 @app.route('/files/<id>', methods=['GET'])
 @app.route('/profile/files/<id>', methods=['GET'])
 def get_files(id):
     db_sess = db_session.create_session()
-    if 'None' not in id:
+    if 'none' not in id.lower():
         ans = db_sess.query(File).filter(File.advrt_id == int(id))
     else:
-        ans = None
-    if ans is None:
         return "<h1>Прикреплённых файлов нет.</h1>"
     return render_template('filesGetT.html', title='Файлы', files=ans, user=current_user)
 
@@ -106,6 +112,14 @@ def configuration():
 @app.route('/profile', methods=['GET'])
 def profile():
     return render_template('profileT.html', title='Поиск', user=current_user)
+
+
+# открытие профиля, публичная версия
+@app.route('/profile/vp/<id>', methods=['GET'])
+def profilePub(id):
+    db_sess = db_session.create_session()
+    this_user = db_sess.query(User).filter(User.id == int(id))[0]
+    return render_template('profilePubT.html', title='Поиск', user=this_user)
 
 
 # открытие объявлений
@@ -209,7 +223,6 @@ def delete_advert(id):
         db_sess.commit()
         return redirect('/profile/adverts')
     return render_template('deletion_confirmation.html', text=f"объявление \"{del_advert.name}\"", user=current_user)
-
 
 
 # вход в систему

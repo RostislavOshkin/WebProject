@@ -21,11 +21,7 @@
                         <br>
                         Цена: {{ advrt.price }}<br>
                         Файлы:
-                        {% if advrt.id_files != 'Нет' %}
                         <a class="nav-link" href="/files/{{advrt.id}}">Ваши файлы</a>
-                        {% else %}
-                        Нет.
-                        {% endif %}
                     </div>
                     <span>
                         <form class="d-flex" method="post">

@@ -2,7 +2,6 @@
 
 {% block content %}
 <h1>Приветствую.</h1>
-<h2>Вот информация для связи с автором: {{ user.communication }}</h2>
 <h2>Все файлы, что приложены к объявлению:</h2>
 {% for file in files %}
 <a href="/file/{{file.id}}" download="{{file.name}}">{{file.name}}</a>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Профиль пользователя с id:{{user.id}}</h1>
+<!--<form class="d-flex" method="post">
+    <input type="hidden" name="btn" value="advertsPRF#">
+    <button class="btn btn-outline-primary" type="submit">Ваши объявления</button>
+</form> -->
+<table class="table">
+    <tbody>
+    <tr>
+        <th scope="row">Имя</th>
+        <td>{{user.name}}</td>
+    </tr>
+    <tr>
+        <th scope="row">id</th>
+        <td>{{user.id}}</td>
+    </tr>
+    <tr>
+        <th scope="row">Информация об аккаунте</th>
+        <td>{{user.description}}</td>
+    </tr>
+    <tr>
+        <th scope="row">Как со мной можно связаться</th>
+        <td>{{user.communication}}</td>
+    </tr>
+    </tbody>
+</table>
+{% endblock %}
