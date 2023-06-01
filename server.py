@@ -2,21 +2,60 @@ import re
 import os
 import sqlite3
 from datetime import timedelta
-
 from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_restful import Api
-
 from data import db_session, users_resources, adverts_resources
 from data.users import User
 from data.adverts import Advert
 from data.config import Config
 from data.files import File
-
 from forms.loginform import LoginForm
 from forms.advertform import AdvertForm
 from forms.register import RegisterForm
-from werkzeug.utils import secure_filename
+
+# PY2 = sys.version_info[0] == 2 - проверка версии Python
+# print(sys.version_info[0])
+
+text_type = str
+_windows_device_files = (
+    "CON",
+    "AUX",
+    "COM1",
+    "COM2",
+    "COM3",
+    "COM4",
+    "LPT1",
+    "LPT2",
+    "LPT3",
+    "PRN",
+    "NUL",
+)
+_filename_strip_re = re.compile(r"[^A-Za-zа-яА-ЯёЁ0-9_.-]")
+
+
+def secure_filename(filename: str) -> str:
+    if isinstance(filename, text_type):
+        from unicodedata import normalize
+        filename = normalize("NFKD", filename)
+
+    for sep in os.path.sep, os.path.altsep:
+        if sep:
+            filename = filename.replace(sep, " ")
+
+    filename = str(_filename_strip_re.sub("", "_".join(filename.split()))).strip(
+        "._"
+    )
+
+    if (
+            os.name == "nt"
+            and filename
+            and filename.split(".")[0].upper() in _windows_device_files
+    ):
+        filename = f"_{filename}"
+
+    return filename
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -82,6 +121,8 @@ def advert_descr(id):
 @app.route('/files/<id>', methods=['GET'])
 @app.route('/profile/files/<id>', methods=['GET'])
 def get_files(id):
+    if not current_user.is_authenticated:
+        return redirect('/login')
     db_sess = db_session.create_session()
     if 'none' not in id.lower():
         ans = db_sess.query(File).filter(File.advrt_id == int(id))
@@ -101,9 +142,9 @@ def get_file(id):
 # настройки
 @app.route('/configuration', methods=['GET'])
 def configuration():
-    db_sess = db_session.create_session()
     if not current_user.is_authenticated:
-        return "<h1>Необходимо войти, чтобы пользоваться этим.</h1>"
+        return redirect('/login')
+    db_sess = db_session.create_session()
     bolean = db_sess.query(Config).filter(Config.person_id == current_user.id)[0].search
     return render_template('configurationT.html', title='Настройки', user=current_user, bolean=bolean)
 
@@ -111,6 +152,8 @@ def configuration():
 # открытие профиля
 @app.route('/profile', methods=['GET'])
 def profile():
+    if not current_user.is_authenticated:
+        return redirect('/login')
     return render_template('profileT.html', title='Поиск', user=current_user)
 
 
@@ -125,6 +168,8 @@ def profilePub(id):
 # открытие объявлений
 @app.route('/profile/adverts', methods=['GET', "POST"])
 def adverts():
+    if not current_user.is_authenticated:
+        return redirect('/login')
     btn_command, id = '', ''
     db_sess = db_session.create_session()
     if request.method == 'POST' and "search_text" in request.form and request.form["search_text"].strip():
@@ -142,33 +187,48 @@ def adverts():
                            btn_command=btn_command)
 
 
+# закачивание файла на сервер
 @app.route('/profile/adverts/files/download/<id_advrt>/<id_person>', methods=['GET', "POST"])
 def selecting_files_in_advert(id_advrt, id_person):
+    if not current_user.is_authenticated:
+        return redirect('/login')
     if request.method == 'GET':
         return render_template('fileSelectT.html', title='Загрузка файлов', user=current_user)
     if current_user.id == int(id_person):
-        saver(request.files['file'])
+        buff = saver(request.files['file'])
+        if not buff:
+            return "<h1>Неверный формат имени файла.</h1>"
         db_sess = db_session.create_session()
         filename = secure_filename(request.files['file'].filename)
-        file = File(advrt_id=id_advrt, name=filename, file=open(f'local/{filename}', mode='br').read())
-        db_sess.add(file)
-        db_sess.commit()
-        poper(filename)
+        if len(filename):
+            file = File(advrt_id=id_advrt, name=filename)
+            db_sess.add(file)
+            db_sess.commit()
     return redirect(f'/profile/adverts')
 
 
+# сохранение файла
 def saver(file):
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'docx', 'bmp'}
     filename = file.filename
     if '.' in filename and filename.split('.')[1].lower() in ALLOWED_EXTENSIONS:
+        if not os.path.isdir(f'notsystemfiles/{current_user.id}'):
+            os.mkdir(f"notsystemfiles/{current_user.id}")
         # безопастно извлекаем имя файла
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename)))
-        print("success saver")
+        name = secure_filename(file.filename)
+        print(name.split('.'))
+        if len(name) and '.' in name and len(name.split('.')[0]):
+            file.save(os.path.join(f'notsystemfiles/{current_user.id}', name))
+            if ((sum([os.path.getsize(f'notsystemfiles/{current_user.id}/{i}') for i in
+                      os.listdir(f'notsystemfiles/{current_user.id}')]) / 1024) / 1024) < 1025:
+                print("success saver")
+                return True
+    return False
 
 
 def poper(filename):
-    if os.path.isfile(os.path.join(app.config['UPLOAD_FOLDER'], filename)):
-        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    if os.path.isfile(os.path.join(f'notsystemfiles/{current_user.id}', filename)):
+        os.remove(os.path.join(f'notsystemfiles/{current_user.id}', filename))
         print("success poper")
 
 
@@ -184,7 +244,6 @@ def new_advert():
         cur = con.cursor()
         advert = Advert(name=form.name.data, id_person=current_user.id, description=form.description.data,
                         price=form.price.data,
-                        id_files=cur.execute(f"""Select MAX(id_files) + 1 From adverts""").fetchone()[0],
                         for_search=re.sub(r'\W', '', (form.name.data + form.description.data).lower()))
         con.close()
         db_sess.add(advert)

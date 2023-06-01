@@ -49,7 +49,6 @@ class AdvertsListResource(Resource):
             description=args['description'],
             price=args['price'],
             data=datetime.strptime(args['data'], '%Y-%m-%d %H:%M:%S.%f'),
-            id_files=args['id_files'],
             for_search=re.sub(r'\W', '', (args['name'] + args['description'])).lower())
         session.add(advert)
         session.commit()
