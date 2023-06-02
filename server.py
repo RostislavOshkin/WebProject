@@ -135,8 +135,8 @@ def get_files(id):
 @app.route('/file/<id>', methods=['GET'])
 def get_file(id):
     db_sess = db_session.create_session()
-    ans = db_sess.query(File.file).filter(File.id == int(id[0]))
-    return ans[0][0]
+    name = db_sess.query(File.name).filter(File.id == int(id[0]))[0][0]
+    return open(f'notsystemfiles/{current_user.id}/{name}', mode='br').read()
 
 
 # настройки
