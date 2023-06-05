@@ -15,5 +15,6 @@ class Advert(SqlAlchemyBase, SerializerMixin):
     price = sqlalchemy.Column(sqlalchemy.String, default='Договорная')
     data = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     for_search = sqlalchemy.Column(sqlalchemy.String)
+    img_id = sqlalchemy.Column(sqlalchemy.Integer, default=-1)
 
     user = orm.relationship('User')

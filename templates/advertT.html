@@ -9,8 +9,12 @@
         {% for advrt in advrts %}
         <div class="col">
             <div class="card h-100">
+                {% if advrt.img_id != -1 %}
+                <img src="/file/{{advrt.img_id}}" class="d-block w-100" alt="...">
+                {% else %}
                 <img src="https://fikiwiki.com/uploads/posts/2022-02/1644984017_1-fikiwiki-com-p-kartinki-zhivotnikh-na-avu-1.jpg"
                      class="d-block w-100" alt="...">
+                {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{advrt.name}}</h5>
                     <div class="card-text">Номер объявления: {{ advrt.id }}<br>

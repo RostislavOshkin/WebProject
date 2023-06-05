@@ -7,30 +7,30 @@
 
 <div class="card-group">
     <div class="row row-cols-1 row-cols-md-3 g-4">
-        {% for item in adverts %}
+        {% for advrt in adverts %}
         <div class="col">
             <div class="card h-100">
+                {% if advrt.img_id != -1 %}
+                <img src="/file/{{advrt.img_id}}" class="d-block w-100" alt="...">
+                {% else %}
                 <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826"
-                     class="card-img-top" alt="...">
+                     class="d-block w-100" alt="...">
+                {% endif %}
                 <div class="card-body">
-                    <h5 class="card-title">{{item.name}}</h5>
-                    <p class="card-text">Номер пользователя: {{item.id_person}}<br>
-                        Описание: {{item.description[:100]}}
-                        {% if item.description != item.description[:100] %}
+                    <h5 class="card-title">{{advrt.name}}</h5>
+                    <p class="card-text">Номер пользователя: {{advrt.id_person}}<br>
+                        Описание: {{advrt.description[:100]}}
+                        {% if advrt.description != advrt.description[:100] %}
                         ...
                         {% endif %}
                         <br>
-                        Цена: {{item.price}}<br>
+                        Цена: {{advrt.price}}<br>
                         Файлы:
-                        {% if item.id_files != 'Нет' %}
-                            <a class="nav-link" href="/files/{{item.id}}">Файлы</a>
-                        {% else %}
-                            Нет.
-                        {% endif %}
-                        Подробнее: <a class="nav-link" href="/advert/{{item.id}}">Описание</a></p>
+                        <a class="nav-link" href="/files/{{advrt.id}}">Файлы</a>
+                        Подробнее: <a class="nav-link" href="/advert/{{advrt.id}}">Описание</a></p>
                 </div>
                 <div class="card-footer">
-                    <small class="text-body-secondary">Дата публикации: {{item.data}}</small>
+                    <small class="text-body-secondary">Дата публикации: {{advrt.data}}</small>
                 </div>
             </div>
         </div>

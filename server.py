@@ -1,6 +1,6 @@
 import re
 import os
-import sqlite3
+import shutil
 from datetime import timedelta
 from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -81,6 +81,10 @@ def index():
 @app.route('/search/<text>', methods=['POST'])
 @app.route('/configuration', methods=['POST'])
 @app.route('/profile', methods=['POST'])
+@app.route('/files/<text>', methods=['POST'])
+@app.route('/profile/files/<text>', methods=['POST'])
+@app.route('/advert/<text>', methods=['POST'])
+@app.route('/profile/vp/<text>', methods=['POST'])
 def start_search(text=''):
     if "search_text" in request.form and request.form["search_text"].strip():
         return redirect(f'/search/{request.form["search_text"]}')
@@ -195,26 +199,32 @@ def selecting_files_in_advert(id_advrt, id_person):
     if request.method == 'GET':
         return render_template('fileSelectT.html', title='Загрузка файлов', user=current_user)
     if current_user.id == int(id_person):
-        buff = saver(request.files['file'])
+        db_sess = db_session.create_session()
+        advert = db_sess.query(Advert).filter(Advert.id == id_advrt).first()
+        buff = saver(request.files['file'], advert.img_id)
         if not buff:
             return "<h1>Неверный формат имени файла.</h1>"
-        db_sess = db_session.create_session()
+
         filename = secure_filename(request.files['file'].filename)
         if len(filename):
             file = File(advrt_id=id_advrt, name=filename)
             db_sess.add(file)
+            if buff and buff != 'continue':
+                advert.img_id = db_sess.query(File).filter(File.advrt_id == id_advrt,
+                                                             File.name == filename).first().id
             db_sess.commit()
     return redirect(f'/profile/adverts')
 
 
 # сохранение файла
-def saver(file):
+def saver(file, advert_img):
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'docx', 'bmp'}
+    IMG_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp'}
     filename = file.filename
     if '.' in filename and filename.split('.')[1].lower() in ALLOWED_EXTENSIONS:
         if not os.path.isdir(f'notsystemfiles/{current_user.id}'):
             os.mkdir(f"notsystemfiles/{current_user.id}")
-        # безопастно извлекаем имя файла
+        # безопасно извлекаем имя файла
         name = secure_filename(file.filename)
         print(name.split('.'))
         if len(name) and '.' in name and len(name.split('.')[0]):
@@ -222,7 +232,9 @@ def saver(file):
             if ((sum([os.path.getsize(f'notsystemfiles/{current_user.id}/{i}') for i in
                       os.listdir(f'notsystemfiles/{current_user.id}')]) / 1024) / 1024) < 1025:
                 print("success saver")
-                return True
+                if advert_img == -1 and filename.split('.')[1].lower() in IMG_EXTENSIONS:
+                    return advert_img == -1 and filename.split('.')[1].lower() in IMG_EXTENSIONS
+                return 'continue'
     return False
 
 
@@ -240,12 +252,9 @@ def new_advert():
     form = AdvertForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        con = sqlite3.connect('db.db')
-        cur = con.cursor()
         advert = Advert(name=form.name.data, id_person=current_user.id, description=form.description.data,
                         price=form.price.data,
                         for_search=re.sub(r'\W', '', (form.name.data + form.description.data).lower()))
-        con.close()
         db_sess.add(advert)
         db_sess.commit()
         return redirect('/profile/adverts')
@@ -278,6 +287,13 @@ def delete_advert(id):
     db_sess = db_session.create_session()
     del_advert = db_sess.query(Advert).filter(Advert.id == id).first()
     if request.method == 'POST':
+        files = db_sess.query(File).filter(File.advrt_id == id)
+        for file in files:
+            try:
+                os.remove(f'notsystemfiles/{current_user.id}/{file.name}')
+            except FileNotFoundError:
+                pass
+            db_sess.delete(file)
         db_sess.delete(del_advert)
         db_sess.commit()
         return redirect('/profile/adverts')
@@ -350,6 +366,17 @@ def delete_profile():
     if request.method == 'POST':
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.id == current_user.id).first()
+        adverts = db_sess.query(Advert).filter(Advert.id_person == current_user.id)
+        configs = db_sess.query(Config).filter(Config.person_id == current_user.id).first()
+        db_sess.delete(configs)
+        for advert in adverts:
+            files = db_sess.query(File).filter(File.advrt_id == advert.id)
+            [db_sess.delete(file) for file in files]
+            db_sess.delete(advert)
+        try:
+            shutil.rmtree(f'notsystemfiles/{current_user.id}')
+        except FileNotFoundError:
+            pass
         db_sess.delete(user)
         db_sess.commit()
         return logout()
