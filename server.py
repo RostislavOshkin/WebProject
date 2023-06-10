@@ -85,6 +85,8 @@ def index():
 @app.route('/profile/files/<text>', methods=['POST'])
 @app.route('/advert/<text>', methods=['POST'])
 @app.route('/profile/vp/<text>', methods=['POST'])
+@app.route('/help', methods=['POST'])
+@app.route('/about_developers', methods=['POST'])
 def start_search(text=''):
     if "search_text" in request.form and request.form["search_text"].strip():
         return redirect(f'/search/{request.form["search_text"]}')
@@ -141,6 +143,12 @@ def get_file(id):
     db_sess = db_session.create_session()
     name = db_sess.query(File.name).filter(File.id == int(id[0]))[0][0]
     return open(f'notsystemfiles/{current_user.id}/{name}', mode='br').read()
+
+
+# скачивание/открытие программных файлов
+@app.route('/program_file/<name>', methods=['GET'])
+def get_program_file(name):
+    return open(f'notsystemfiles/admin/{name}', mode='br').read()
 
 
 # настройки
@@ -233,7 +241,7 @@ def saver(file, advert_img):
                       os.listdir(f'notsystemfiles/{current_user.id}')]) / 1024) / 1024) < 1025:
                 print("success saver")
                 if advert_img == -1 and filename.split('.')[1].lower() in IMG_EXTENSIONS:
-                    return advert_img == -1 and filename.split('.')[1].lower() in IMG_EXTENSIONS
+                    return True
                 return 'continue'
     return False
 
@@ -298,6 +306,16 @@ def delete_advert(id):
         db_sess.commit()
         return redirect('/profile/adverts')
     return render_template('deletion_confirmation.html', text=f"объявление \"{del_advert.name}\"", user=current_user)
+
+
+@app.route('/help', methods=['GET'])
+def help():
+    return render_template('helpT.html', title='Помощь', user=current_user)
+
+
+@app.route('/about_developers', methods=['GET'])
+def about_developers():
+    return render_template('about_developersT.html', title='О разработчиках', user=current_user)
 
 
 # вход в систему

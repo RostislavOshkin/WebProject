@@ -4,6 +4,9 @@
 <h1>Описание</h1>
 <div>
     <p>Номер пользователя: {{advert.id_person}}<br>
+    {% if advert.img_id != -1 %}
+        <img src="/file/{{advert.img_id}}" class="d-block" alt="..." width="400" height="400">
+    {% endif %}
         Описание: {{advert.description}}
         <br>
         Цена: {{advert.price}}<br>
