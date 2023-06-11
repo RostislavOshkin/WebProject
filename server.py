@@ -208,7 +208,8 @@ def profile():
 def profilePub(id):
     db_sess = db_session.create_session()
     this_user = db_sess.query(User).filter(User.id == int(id))[0]
-    return render_template('profilePubT.html', title='Поиск', user=this_user)
+    _icon_bool = 1 if os.path.isdir(f'notsystemfiles/{current_user.id}/icon') else 0
+    return render_template('profilePubT.html', title='Поиск', user=this_user, _icon=_icon_bool)
 
 
 # открытие объявлений

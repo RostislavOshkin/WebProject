@@ -6,6 +6,15 @@
     <input type="hidden" name="btn" value="advertsPRF#">
     <button class="btn btn-outline-primary" type="submit">Ваши объявления</button>
 </form> -->
+{% if _icon == 1 %}
+<div class="container">
+    <div class="row">
+        <div class="col text-center">
+            <img src="/icon/{{user.id}}" class="img-thumbnail">
+        </div>
+    </div>
+</div>
+{% endif %}
 <table class="table">
     <tbody>
     <tr>
