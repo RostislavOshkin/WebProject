@@ -89,7 +89,9 @@ def start_search(text=''):
     if "search_text" in request.form and request.form["search_text"].strip():
         return redirect(f'/search/{request.form["search_text"]}')
     if 'btn' in request.form and request.form['btn'] == 'advertsPRF#':
-        return redirect(f'/profile/adverts')
+        return redirect('/profile/adverts')
+    if 'btn' in request.form and 'iconPRF#' in request.form['btn']:
+        return redirect(f'/photo_profile/{request.form["btn"].split()[1]}')
     if 'btn' in request.form and request.form['btn'] == 'configsPRF#':
         db_sess = db_session.create_session()
         i = db_sess.query(Config).filter(Config.person_id == current_user.id).first()
@@ -143,6 +145,41 @@ def get_file(id):
     return open(f'notsystemfiles/{current_user.id}/{name}', mode='br').read()
 
 
+# скачивание иконки
+@app.route('/icon/<id>', methods=['GET'])
+def get_icon_file(id):
+    try:
+        return open(f'notsystemfiles/{int(id)}/icon/icon.bmp', mode='br').read()
+    except Exception:
+        return (None, '<br><h1>Не удалось открыть иконку, попробуйте обратится в техподдержку.</h1>')
+
+
+# закачивание иконки профиля
+@app.route('/photo_profile/<id_person>', methods=['GET', "POST"])
+def get_photo(id_person):
+    if not current_user.is_authenticated:
+        return redirect('/login')
+    if request.method == 'GET':
+        return render_template('fileSelectT.html', title='Загрузка фото профиля', user=current_user)
+    if current_user.id == int(id_person):
+        ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp'}
+        name = request.files['file'].filename
+        if '.' in name and name.split('.')[1].lower() in ALLOWED_EXTENSIONS:
+            if not os.path.isdir(f'notsystemfiles/{current_user.id}/icon'):
+                os.mkdir(f"notsystemfiles/{current_user.id}/icon")
+                _icon = open('notsystemfiles/icon.bmp', mode='br').read()
+                with open(f'notsystemfiles/{current_user.id}/icon/icon.bmp', mode='wb') as f:
+                    f.write(_icon)
+            request.files['file'].save(os.path.join(f'notsystemfiles/{current_user.id}/icon', 'icon.bmp'))
+            if ((os.path.getsize(f'notsystemfiles/{current_user.id}/icon/icon.bmp') / 1024) / 1024) < 1:
+                print("success saver")
+                return redirect('/profile')
+    if not os.path.isdir(f'notsystemfiles/{current_user.id}/icon'):
+        os.mkdir(f"notsystemfiles/{current_user.id}/icon")
+        shutil.copy(f'notsystemfiles/icon.bmp', f'notsystemfiles/{current_user.id}/icon')
+    return False
+
+
 # настройки
 @app.route('/configuration', methods=['GET'])
 def configuration():
@@ -158,6 +195,11 @@ def configuration():
 def profile():
     if not current_user.is_authenticated:
         return redirect('/login')
+    if not os.path.isdir(f'notsystemfiles/{current_user.id}/icon'):
+        if not os.path.isdir(f'notsystemfiles/{current_user.id}'):
+            os.mkdir(f"notsystemfiles/{current_user.id}")
+        os.mkdir(f"notsystemfiles/{current_user.id}/icon")
+        shutil.copy(f'notsystemfiles/icon.bmp', f'notsystemfiles/{current_user.id}/icon')
     return render_template('profileT.html', title='Поиск', user=current_user)
 
 
@@ -211,7 +253,7 @@ def selecting_files_in_advert(id_advrt, id_person):
             db_sess.add(file)
             if buff and buff != 'continue':
                 advert.img_id = db_sess.query(File).filter(File.advrt_id == id_advrt,
-                                                             File.name == filename).first().id
+                                                           File.name == filename).first().id
             db_sess.commit()
     return redirect(f'/profile/adverts')
 
@@ -235,6 +277,7 @@ def saver(file, advert_img):
                 if advert_img == -1 and filename.split('.')[1].lower() in IMG_EXTENSIONS:
                     return advert_img == -1 and filename.split('.')[1].lower() in IMG_EXTENSIONS
                 return 'continue'
+    poper(name)
     return False
 
 

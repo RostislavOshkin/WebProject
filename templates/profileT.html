@@ -2,10 +2,23 @@
 
 {% block content %}
 <h1>Профиль</h1>
-<form class="d-flex" method="post">
-    <input type="hidden" name="btn" value="advertsPRF#">
-    <button class="btn btn-outline-primary" type="submit">Ваши объявления</button>
-</form>
+<div class="container">
+    <div class="row">
+        <div class="col text-center">
+            <img src="/icon/{{current_user.id}}" class="img-thumbnail">
+        </div>
+    </div>
+</div>
+<div class="btn-group" role="group" aria-label="Basic example">
+    <form class="d-flex" method="post">
+        <input type="hidden" name="btn" value="advertsPRF#">
+        <button class="btn btn-outline-primary" type="submit">Ваши объявления</button>
+    </form>
+    <form class="d-flex" method="post">
+        <input type="hidden" name="btn" value="iconPRF# {{user.id}}">
+        <button class="btn btn-outline-primary" type="submit">Изменить иконку профиля.</button>
+    </form>
+</div>
 <table class="table">
     <tbody>
     <tr>
