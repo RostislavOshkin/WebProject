@@ -8,12 +8,12 @@
     <div class="row row-cols-1 row-cols-md-3 g-4">
         {% for advrt in advrts %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card" style="width: 18.9rem;">
                 {% if advrt.img_id != -1 %}
-                <img src="/file/{{advrt.img_id}}" class="d-block w-100" alt="...">
+                <img src="/file/{{advrt.img_id}}" class="d-block" alt="..." width="300" height="300">
                 {% else %}
                 <img src="https://fikiwiki.com/uploads/posts/2022-02/1644984017_1-fikiwiki-com-p-kartinki-zhivotnikh-na-avu-1.jpg"
-                     class="d-block w-100" alt="...">
+                     class="d-block" alt="..." width="300" height="300">
                 {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{advrt.name}}</h5>
