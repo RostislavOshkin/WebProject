@@ -9,13 +9,23 @@
     <div class="row row-cols-1 row-cols-md-3 g-4">
         {% for advrt in adverts %}
         <div class="col">
-            <div class="card" style="width: 18.9rem;">
+            {% if adverts[0] == adverts[-1] %}
+            <div class="card" style="width: 20rem;">
                 {% if advrt.img_id != -1 %}
                 <img src="/file/{{advrt.img_id}}" class="d-block" alt="..." width="300" height="300">
                 {% else %}
                 <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826"
                      class="d-block" alt="..." width="300" height="300">
                 {% endif %}
+            {% else %}
+            <div class="card h-100">
+                {% if advrt.img_id != -1 %}
+                <img src="/file/{{advrt.img_id}}" class="d-block w-100" alt="...">
+                {% else %}
+                <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826"
+                     class="d-block w-100" alt="...">
+                {% endif %}
+            {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{advrt.name}}</h5>
                     <p class="card-text">Номер пользователя: {{advrt.id_person}}<br>
