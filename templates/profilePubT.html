@@ -35,4 +35,9 @@
     </tr>
     </tbody>
 </table>
+
+<form class="d-flex" method="post">
+    <input type="hidden" name="btn" value="StartChat {{user.id}} {{user.name}}">
+    <button class="btn btn-outline-primary" type="submitStartChat">Начать чат с данным пользователем.</button>
+</form>
 {% endblock %}

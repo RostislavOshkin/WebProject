@@ -4,8 +4,12 @@
 
 <h1>{{obj_name}}</h1>
 <h1>Ваша переписка</h1>
-<p>{{obj}}
-</p>
+<div>
+    {% for i in obj%}
+    {{i}}
+    <br>
+    {% endfor %}
+</div>
 <form method="POST">
     <div class="mb-3">
         <label for="InputText1" class="form-label">Текст сообщения</label>

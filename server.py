@@ -94,6 +94,9 @@ def start_search(text=''):
         return redirect(f'/profile/adverts')
     if 'btn' in request.form and 'iconPRF#' in request.form['btn']:
         return redirect(f'/photo_profile/{request.form["btn"].split()[1]}')
+    if 'btn' in request.form and 'StartChat' in request.form['btn']:
+        _temp = request.form['btn'].split()
+        return redirect(f'/pre-chat/{_temp[1]}/{_temp[2]}')
     if 'btn' in request.form and request.form['btn'] == 'configsPRF#':
         db_sess = db_session.create_session()
         i = db_sess.query(Config).filter(Config.person_id == current_user.id).first()
@@ -101,12 +104,12 @@ def start_search(text=''):
         db_sess.add(i)
         db_sess.commit()
     if 'messg' in request.form:
-        if not os.path.isdir(f'notsystemfiles/quests'):
-            os.mkdir("notsystemfiles/quests")
-            f = open(f"quests/{current_user.id}", mode='w')
-            f.close()
-            shutil.copy(f'notsystemfiles/icon.bmp', f'notsystemfiles/{current_user.id}/icon')
-        print(request.form['messg'])
+        f_last = ''
+        if os.path.isfile(f"notsystemfiles/quests/{current_user.id}"):
+            f_last = open(f"notsystemfiles/quests/{current_user.id}", mode='r', encoding='utf8').read()
+        f = open(f"notsystemfiles/quests/{current_user.id}", mode='w', encoding='utf8')
+        f.write(f_last + '\n\n' + request.form["messg"])
+        f.close()
     return redirect(request.full_path[:-1])
 
 
@@ -160,21 +163,56 @@ def get_program_file(name):
     return open(f'notsystemfiles/admin/{name}', mode='br').read()
 
 
+@app.route('/pre-chat/<id>/<name>', methods=['GET'])
+def start_chat(id, name):
+    open(f'notsystemfiles/{current_user.id}/chating/{id} {name}', mode='w', encoding="utf8")
+    open(f'notsystemfiles/{id}/chating/{current_user.id} {current_user.name}', mode='w', encoding="utf8")
+    return redirect(f'/chat/{id}/{name}')
+
+
 # demo-chat
 @app.route('/chat', methods=['GET', 'POST'])
 @app.route('/chat/<id>/<name>', methods=['GET', 'POST'])
-def chat(id='', name=''):
+def chat(id='', name='', text=''):
+    if not current_user.is_authenticated:
+        return redirect('/login')
+    if "search_text" in request.form and request.form["search_text"].strip():
+        return redirect(f'/search/{request.form["search_text"]}')
     if request.method == 'GET' and len(id):
         return render_template('demo_chat_personT.html',
-                               obj='\n\n'.join(
-                                   open(f"notsystemfiles/{current_user.id}/chating/{id} {name}", mode='r').read().split(
-                                       ':{$~<e0mb4~?n0s.d~>@#[')),
+                               obj=
+                               open(f"notsystemfiles/{current_user.id}/chating/{id} {name}", mode='r',
+                                    encoding="utf8").read().split(
+                                   ':{$~<e0mb4~?n0s.d~>@#['),
                                obj_name=name,
+                               obj_i=f"{id} {name}",
                                user=current_user)
     if request.method == 'GET':
         # список "айди - переписка".
         lst = [i.split() for i in os.listdir(f'notsystemfiles/{current_user.id}/chating')]
         return render_template('demo_chatT.html', obj=lst, user=current_user)
+    if request.method == 'POST':
+        f_last = ''
+        if os.path.isfile(f'notsystemfiles/{current_user.id}/chating/{id} {name}'):
+            f_last = open(f'notsystemfiles/{current_user.id}/chating/{id} {name}', mode='r',
+                          encoding="utf8").read()
+        f = open(f"notsystemfiles/{current_user.id}/chating/{id} {name}", mode='w',
+                 encoding="utf8")
+        _res = f_last + '\n' + current_user.name + ':' + request.form["message"].strip() + ':{$~<e0mb4~?n0s.d~>@#['
+        f.write(_res)
+        f.close()
+        f = open(f"notsystemfiles/{id}/chating/{current_user.id} {current_user.name}", mode='w',
+                 encoding="utf8")
+        f.write(_res)
+        f.close()
+        return render_template('demo_chat_personT.html',
+                               obj=
+                               open(f"notsystemfiles/{current_user.id}/chating/{id} {name}", mode='r',
+                                    encoding="utf8").read().split(
+                                   ':{$~<e0mb4~?n0s.d~>@#['),
+                               obj_name=name,
+                               obj_i=f"{id} {name}",
+                               user=current_user)
 
 
 # скачивание иконки
