@@ -63,7 +63,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
 app.config['UPLOAD_FOLDER'] = 'local'
 login_manager = LoginManager()
 login_manager.init_app(app)
-
+# Create the API
 api = Api(app, catch_all_404s=True)
 
 
@@ -100,6 +100,13 @@ def start_search(text=''):
         i.search = not i.search
         db_sess.add(i)
         db_sess.commit()
+    if 'messg' in request.form:
+        if not os.path.isdir(f'notsystemfiles/quests'):
+            os.mkdir("notsystemfiles/quests")
+            f = open(f"quests/{current_user.id}", mode='w')
+            f.close()
+            shutil.copy(f'notsystemfiles/icon.bmp', f'notsystemfiles/{current_user.id}/icon')
+        print(request.form['messg'])
     return redirect(request.full_path[:-1])
 
 
@@ -153,13 +160,30 @@ def get_program_file(name):
     return open(f'notsystemfiles/admin/{name}', mode='br').read()
 
 
+# demo-chat
+@app.route('/chat', methods=['GET', 'POST'])
+@app.route('/chat/<id>/<name>', methods=['GET', 'POST'])
+def chat(id='', name=''):
+    if request.method == 'GET' and len(id):
+        return render_template('demo_chat_personT.html',
+                               obj='\n\n'.join(
+                                   open(f"notsystemfiles/{current_user.id}/chating/{id} {name}", mode='r').read().split(
+                                       ':{$~<e0mb4~?n0s.d~>@#[')),
+                               obj_name=name,
+                               user=current_user)
+    if request.method == 'GET':
+        # список "айди - переписка".
+        lst = [i.split() for i in os.listdir(f'notsystemfiles/{current_user.id}/chating')]
+        return render_template('demo_chatT.html', obj=lst, user=current_user)
+
+
 # скачивание иконки
 @app.route('/icon/<id>', methods=['GET'])
 def get_icon_file(id):
     try:
         return open(f'notsystemfiles/{int(id)}/icon/icon.bmp', mode='br').read()
     except Exception:
-        return (None, '<br><h1>Не удалось открыть иконку, попробуйте обратится в техподдержку.</h1>')
+        return '<br><h1>Не удалось открыть иконку, попробуйте обратится в техподдержку.</h1>'
 
 
 # закачивание иконки профиля
@@ -173,18 +197,10 @@ def get_photo(id_person):
         ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp'}
         name = request.files['file'].filename
         if '.' in name and name.split('.')[1].lower() in ALLOWED_EXTENSIONS:
-            if not os.path.isdir(f'notsystemfiles/{current_user.id}/icon'):
-                os.mkdir(f"notsystemfiles/{current_user.id}/icon")
-                _icon = open('notsystemfiles/icon.bmp', mode='br').read()
-                with open(f'notsystemfiles/{current_user.id}/icon/icon.bmp', mode='wb') as f:
-                    f.write(_icon)
             request.files['file'].save(os.path.join(f'notsystemfiles/{current_user.id}/icon', 'icon.bmp'))
             if ((os.path.getsize(f'notsystemfiles/{current_user.id}/icon/icon.bmp') / 1024) / 1024) < 1:
                 print("success saver")
                 return redirect('/profile')
-    if not os.path.isdir(f'notsystemfiles/{current_user.id}/icon'):
-        os.mkdir(f"notsystemfiles/{current_user.id}/icon")
-        shutil.copy(f'notsystemfiles/icon.bmp', f'notsystemfiles/{current_user.id}/icon')
     return False
 
 
@@ -203,11 +219,6 @@ def configuration():
 def profile():
     if not current_user.is_authenticated:
         return redirect('/login')
-    if not os.path.isdir(f'notsystemfiles/{current_user.id}/icon'):
-        if not os.path.isdir(f'notsystemfiles/{current_user.id}'):
-            os.mkdir(f"notsystemfiles/{current_user.id}")
-        os.mkdir(f"notsystemfiles/{current_user.id}/icon")
-        shutil.copy(f'notsystemfiles/icon.bmp', f'notsystemfiles/{current_user.id}/icon')
     return render_template('profileT.html', title='Поиск', user=current_user)
 
 
@@ -418,6 +429,14 @@ def register():
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
+        id = db_sess.query(User).filter(User.address == form.address.data).first().id
+        # создание нужных файлов и директорий
+        os.mkdir(f'notsystemfiles/{id}')
+        os.mkdir(f"notsystemfiles/{id}/icon")
+        _icon = open('notsystemfiles/admin/icon.bmp', mode='br').read()
+        with open(f'notsystemfiles/{id}/icon/icon.bmp', mode='wb') as f:
+            f.write(_icon)
+        os.mkdir(f'notsystemfiles/{id}/chating')
         return redirect('/login')
     return render_template('registerT.html', title='Регистрация', form=form, user=current_user)
 

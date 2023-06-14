@@ -8,6 +8,7 @@
             background-image: url("https://bogatyr.club/uploads/posts/2023-02/1677448103_bogatyr-club-p-svetlo-serii-tsvet-fon-pinterest-46.jpg");
         }
 
+
     </style>
     <link rel="stylesheet"
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -28,6 +29,9 @@
                     {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="/profile">Профиль</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chat">Чат-мессенджер</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-danger" href="/logout">Выход</a>
@@ -54,28 +58,31 @@
 <main role="main" class="container">
     {% block content %}{% endblock %}
 </main>
-    <footer class="bd-footer py-4 py-md-5 mt-5 bg-body-tertiary">
-  <div class="container py-4 py-md-5 px-4 px-md-3 text-body-secondary">
-    <div class="row">
-      <div class="col-lg-3 mb-3">
-        <a class="d-inline-flex align-items-center mb-2 text-body-emphasis text-decoration-none" href="/" aria-label="AntiStore">
-          <span class="fs-5">AntiStore</span>
-        </a>
-        <ul class="list-unstyled small">
-          <li class="mb-2">Разработано и создано со всей любовью нашей командой разработчиков при поддержке <a href="https://academy.yandex.ru/lyceum">Лицея Академии Яндекса</a>.</li>
-          <li class="mb-2">На данный момент v1.0.0.</li>
-        </ul>
-      </div>
-      <div class="col-6 col-lg-2 offset-lg-1 mb-3">
-        <h5>Ссылки</h5>
-        <ul class="list-unstyled">
-          <li class="mb-2"><a href="/">Дом</a></li>
-          <li class="mb-2"><a href="/help">Помощь</a></li>
-          <li class="mb-2"><a href="/about_developers">О разработчиках</a></li>
-        </ul>
-      </div>
-  </div>
-  </div>
+<footer class="bd-footer py-4 py-md-5 mt-5 bg-body-tertiary">
+    <div class="container py-4 py-md-5 px-4 px-md-3 text-body-secondary">
+        <div class="row">
+            <div class="col-lg-3 mb-3">
+                <a class="d-inline-flex align-items-center mb-2 text-body-emphasis text-decoration-none" href="/"
+                   aria-label="AntiStore">
+                    <span class="fs-5">AntiStore</span>
+                </a>
+                <ul class="list-unstyled small">
+                    <li class="mb-2">Разработано и создано со всей любовью нашей командой разработчиков при поддержке <a
+                            href="https://academy.yandex.ru/lyceum">Лицея Академии Яндекса</a>.
+                    </li>
+                    <li class="mb-2">На данный момент v1.0.0.</li>
+                </ul>
+            </div>
+            <div class="col-6 col-lg-2 offset-lg-1 mb-3">
+                <h5>Ссылки</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/">Дом</a></li>
+                    <li class="mb-2"><a href="/help">Помощь</a></li>
+                    <li class="mb-2"><a href="/about_developers">О разработчиках</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </footer>
 </body>
 </html>

@@ -2,7 +2,15 @@
 
 {% block content %}
 <h1>Нужна помощь?</h1>
-<div>
-  К сожалению, мы вам пока что ни чем помочь не может.
-</div>
+<form method="POST">
+    <div class="mb-3">
+        <label for="InputText1" class="form-label">Текст обращения</label>
+        <textarea class="form-control" id="InputText1" name="messg" rows="5"></textarea>
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+        <label class="form-check-label" for="exampleCheck1">Проверить меня</label>
+    </div>
+    <button type="submit" class="btn btn-primary" value="SubmitHelp">Отправить</button>
+</form>
 {% endblock %}
