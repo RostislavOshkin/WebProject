@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{obj_name}}</h1>
+<h1>Ваша переписка</h1>
+<p>{{obj}}
+</p>
+<form method="POST">
+    <div class="mb-3">
+        <label for="InputText1" class="form-label">Текст сообщения</label>
+        <textarea class="form-control" id="InputText1" name="message" rows="5"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary" value="SubmitChat">Отправить</button>
+</form>
+{% endblock %}
