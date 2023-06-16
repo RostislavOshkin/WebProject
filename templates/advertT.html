@@ -26,7 +26,6 @@
                     </div>
                     <div class="vstack gap-2 mx-auto">
                         <a class="btn btn-outline-primary" href="/files/{{advrt.id}}">Ваши файлы</a>
-                        <a class="btn btn-outline-primary" href="/files/{{advrt.id}}">Ваши файлы</a>
                         <form class="d-flex" method="post">
                             <input type="hidden" name="btn" value="/ {{advrt.id}}">
                             <button class="btn btn-outline-success" type="submit">Прикрепить файлы</button>
@@ -47,6 +46,7 @@
             </div>
         </div>
         {% endfor %}
+        
     </div>
 </div>
 {% endblock %}
