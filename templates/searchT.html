@@ -9,42 +9,41 @@
     <div class="row row-cols-1 row-cols-md-3 g-4">
         {% for advrt in adverts %}
         <div class="col">
+            <div class="card h-100" style="width: 21.9rem;">
             {% if adverts[0] == adverts[-1] %}
-            <div class="card" style="width: 20rem;">
                 {% if advrt.img_id != -1 %}
-                <img src="/file/{{advrt.img_id}}" class="d-block" alt="..." width="300" height="300">
+                <img src="/file/{{advrt.img_id}}">
                 {% else %}
-                <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826"
-                     class="d-block" alt="..." width="300" height="300">
+                <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826">
                 {% endif %}
             {% else %}
-            <div class="card h-100">
                 {% if advrt.img_id != -1 %}
-                <img src="/file/{{advrt.img_id}}" class="d-block w-100" alt="...">
+                <img src="/file/{{advrt.img_id}}">
                 {% else %}
-                <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826"
-                     class="d-block w-100" alt="...">
+                <img src="https://img.freepik.com/premium-vector/photo-frame-icon-empty-photo-blank-vector-on-isolated-transparent-background-eps-10_399089-1290.jpg?w=826">
                 {% endif %}
             {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{advrt.name}}</h5>
-                    <p class="card-text">Номер пользователя: {{advrt.id_person}}<br>
-                        Описание: {{advrt.description[:100]}}
-                        {% if advrt.description != advrt.description[:100] %}
-                        ...
-                        {% endif %}
-                        <br>
-                        Цена: {{advrt.price}}<br>
-                        Файлы:
-                        <a class="nav-link" href="/files/{{advrt.id}}">Файлы</a>
-                        Подробнее: <a class="nav-link" href="/advert/{{advrt.id}}">Описание</a></p>
-                </div>
-                <div class="card-footer">
-                    <small class="text-body-secondary">Дата публикации: {{advrt.data}}</small>
+                    <div class="card-body">
+                        <h5 class="card-title">{{advrt.name}}</h5>
+                        <p class="card-text">Номер пользователя: {{advrt.id_person}}<br>
+                            Описание: {{advrt.description[:100]}}
+                            {% if advrt.description != advrt.description[:100] %}
+                            ...
+                            {% endif %}
+                            <br>
+                            Цена: {{advrt.price}}<br></p>
+                        <div class="vstack gap-2 mx-auto">
+                            <a class="btn btn-outline-primary" href="/files/{{advrt.id}}">Файлы</a>
+                            <a class="btn btn-outline-primary" href="/advert/{{advrt.id}}">Описание</a>
+                        </div>
+
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-body-secondary">Дата публикации: {{advrt.data}}</small>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
-</div>
-{% endblock %}
+    {% endblock %}

@@ -90,10 +90,6 @@ def index():
 def start_search(text=''):
     if "search_text" in request.form and request.form["search_text"].strip():
         return redirect(f'/search/{request.form["search_text"]}')
-    if 'btn' in request.form and request.form['btn'] == 'advertsPRF#':
-        return redirect(f'/profile/adverts')
-    if 'btn' in request.form and 'iconPRF#' in request.form['btn']:
-        return redirect(f'/photo_profile/{request.form["btn"].split()[1]}')
     if 'btn' in request.form and 'StartChat' in request.form['btn']:
         _temp = request.form['btn'].split()
         return redirect(f'/pre-chat/{_temp[1]}/{_temp[2]}')
@@ -178,7 +174,7 @@ def chat(id='', name='', text=''):
         return redirect('/login')
     if "search_text" in request.form and request.form["search_text"].strip():
         return redirect(f'/search/{request.form["search_text"]}')
-    if request.method == 'GET' and len(id):
+    if request.method == 'GET' and id:
         return render_template('demo_chat_personT.html',
                                obj=
                                open(f"notsystemfiles/{current_user.id}/chating/{id} {name}", mode='r',
@@ -211,7 +207,7 @@ def chat(id='', name='', text=''):
                                     encoding="utf8").read().split(
                                    ':{$~<e0mb4~?n0s.d~>@#['),
                                obj_name=name,
-                               obj_i=f"{id} {name}",
+                               obj_id=f"{id}",
                                user=current_user)
 
 
@@ -266,7 +262,7 @@ def profilePub(id):
     db_sess = db_session.create_session()
     this_user = db_sess.query(User).filter(User.id == int(id))[0]
     _icon_bool = 1 if os.path.isdir(f'notsystemfiles/{current_user.id}/icon') else 0
-    return render_template('profilePubT.html', title='Поиск', user=this_user, _icon=_icon_bool)
+    return render_template('profilePubT.html', title=this_user.name, user=this_user, _icon=_icon_bool)
 
 
 # открытие объявлений

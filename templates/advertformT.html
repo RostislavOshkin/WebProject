@@ -27,25 +27,28 @@
                     <p>
                         {{ form.name.label }}<br>
                         {{ form.name(class="form-control", value=advert.name) }}<br>
+                     </p>
                         {% for error in form.name.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}
                     </p>
                     {% endfor %}
-                    </p>
+
                     <p>
                         {{ form.description.label }}<br>
                         {% set f = form.description.process_data(advert.description) %}
                         {{ form.description(class="form-control") }}<br>
+                    </p>
                         {% for error in form.description.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}
                     </p>
                     {% endfor %}
-                    </p>
+
                     <p>
                         {{ form.price.label }}<br>
                         {{ form.price(class="form-control", value=advert.price) }}<br>
+                    </p>
                         {% for error in form.price.errors %}
                     <p class="alert alert-danger" role="alert">
                         {{ error }}

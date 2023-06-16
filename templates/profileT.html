@@ -9,25 +9,15 @@
         </div>
     </div>
 </div>
-<div class="btn-group" role="group" aria-label="Basic example">
-    <form class="d-flex" method="post">
-        <input type="hidden" name="btn" value="advertsPRF#">
-        <button class="btn btn-outline-primary" type="submit">Ваши объявления</button>
-    </form>
-    <form class="d-flex" method="post">
-        <input type="hidden" name="btn" value="iconPRF# {{user.id}}">
-        <button class="btn btn-outline-primary" type="submit">Изменить иконку профиля.</button>
-    </form>
+<div class="vstack gap-2 mx-auto">
+    <a class="btn btn-outline-primary" href="/profile/adverts">Ваши объявления</a>
+    <a class="btn btn-outline-primary" href="/photo_profile/{{current_user.id}}">Изменить иконку профиля.</a>
 </div>
 <table class="table">
     <tbody>
     <tr>
         <th scope="row">Имя</th>
         <td>{{current_user.name}}</td>
-    </tr>
-    <tr>
-        <th scope="row">id</th>
-        <td>{{current_user.id}}</td>
     </tr>
     <tr>
         <th scope="row">Информация об аккаунте</th>

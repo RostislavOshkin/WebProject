@@ -8,12 +8,11 @@
     <div class="row row-cols-1 row-cols-md-3 g-4">
         {% for advrt in advrts %}
         <div class="col">
-            <div class="card" style="width: 18.9rem;">
+            <div class="card h-100" style="width: 21.9rem;">
                 {% if advrt.img_id != -1 %}
-                <img src="/file/{{advrt.img_id}}" class="d-block" alt="..." width="300" height="300">
+                <img src="/file/{{advrt.img_id}}">
                 {% else %}
-                <img src="https://fikiwiki.com/uploads/posts/2022-02/1644984017_1-fikiwiki-com-p-kartinki-zhivotnikh-na-avu-1.jpg"
-                     class="d-block" alt="..." width="300" height="300">
+                <img src="https://fikiwiki.com/uploads/posts/2022-02/1644984017_1-fikiwiki-com-p-kartinki-zhivotnikh-na-avu-1.jpg">
                 {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{advrt.name}}</h5>
@@ -24,27 +23,23 @@
                         {% endif %}
                         <br>
                         Цена: {{ advrt.price }}<br>
-                        Файлы:
-                        <a class="nav-link" href="/files/{{advrt.id}}">Ваши файлы</a>
                     </div>
-                    <span>
+                    <div class="vstack gap-2 mx-auto">
+                        <a class="btn btn-outline-primary" href="/files/{{advrt.id}}">Ваши файлы</a>
+                        <a class="btn btn-outline-primary" href="/files/{{advrt.id}}">Ваши файлы</a>
                         <form class="d-flex" method="post">
                             <input type="hidden" name="btn" value="/ {{advrt.id}}">
                             <button class="btn btn-outline-success" type="submit">Прикрепить файлы</button>
                         </form>
-                    </span>
-                    <span style="float:left;">
+                    </div>
                         <form class="d-flex" method="post">
                             <input type="hidden" name="btn" value="update {{advrt.id}}">
                             <button class="btn btn-outline-warning" type="submit">Изменить</button>
                         </form>
-                    </span>
-                    <span style="float:right">
                         <form class="d-flex" method="post">
                             <input type="hidden" name="btn" value="del {{advrt.id}}">
                             <button class="btn btn-outline-danger" type="submit">Удалить</button>
                         </form>
-                    </span>
                 </div>
                 <div class="card-footer">
                     <small class="text-body-secondary">Дата публикации: {{advrt.data}}</small>

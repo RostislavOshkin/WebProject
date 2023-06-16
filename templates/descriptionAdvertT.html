@@ -3,20 +3,21 @@
 {% block content %}
 <h1>Описание</h1>
 <div>
-    <p>Номер пользователя: {{advert.id_person}}<br>
+    <p>Номер пользователя: {{advert.id_person}}<br></p>
     {% if advert.img_id != -1 %}
-        <img src="/file/{{advert.img_id}}" class="d-block" alt="..." width="400" height="400">
+    <img src="/file/{{advert.img_id}}" class="d-block" alt="..." width="400" height="400">
     {% endif %}
-        Описание: {{advert.description}}
-        <br>
-        Цена: {{advert.price}}<br>
-        Файлы:
-        {% if advert.id_files != 'Нет' %}
-        <a class="nav-link" href="/files/{{advert.id}}">Файлы</a>
+    Описание: {{advert.description}}
+    <br>
+    Цена: {{advert.price}}<br><br>
+    {% if advert.id_files != 'Нет' %}
+    <div class="vstack gap-2 mx-auto">
+        <a class="btn btn-outline-primary" href="/files/{{advert.id}}">Файлы</a>
         {% else %}
         Нет.
         {% endif %}
-        Профиль: <a class="nav-link" href="/profile/vp/{{advert.id_person}}">Профиль</a>
-    </p>
+        <a class="btn btn-outline-primary" href="/profile/vp/{{advert.id_person}}">Профиль</a>
+    </div>
+
 </div>
 {% endblock %}
